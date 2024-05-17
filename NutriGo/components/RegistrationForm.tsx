@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { firestore } from '../firebase/firebase';
+import { auth, firestore } from '../firebase/firebase';
 import { addDoc, collection } from "firebase/firestore";
 import { User } from '../models/User';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const RegistrationForm = ({ onSubmit }: { onSubmit: (user: User) => void }) => {
   const [user, setUser] = useState<User>({
@@ -23,17 +24,21 @@ const RegistrationForm = ({ onSubmit }: { onSubmit: (user: User) => void }) => {
     setUser({ ...user, [field]: value });
   };
 
-  const handleRegister = async () => {
-    try {
-      const userRef = await addDoc(collection(firestore, "users"), user);
-      setUser({ ...user, id: userRef.id });
+const handleRegister = async () => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
+    const firebaseUser = userCredential.user;
+    if (firebaseUser) {
+      console.log("User added with ID: ", firebaseUser.uid);
+      setUser({ ...user, id: firebaseUser.uid });
       onSubmit(user);
       setMessage('Registration Successful!');
-    } catch (error) {
-      console.error("Error adding user: ", error);
-      setMessage('Registration Failed. Please try again.');
     }
-  };
+  } catch (error) {
+    console.error("Error adding user: ", error);
+    setMessage('Registration Failed. Please try again.');
+  }
+};
 
   return (
     <View style={styles.container}>
