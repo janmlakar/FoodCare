@@ -9,16 +9,15 @@ const Layout = () => {
   return (
     <UserProvider>
       <View style={styles.container}>
-        <View style={styles.content}>
-          <Slot />
-        </View>
         <View style={styles.navbar}>
           <Button title="Home" onPress={() => router.push('/')} />
           <Button title="Register" onPress={() => router.push('/register')} />
           <Button title="Login" onPress={() => router.push('/login')} />
-          <Button title="Calorie Tracker" onPress={() => router.push('/calorie-tracker')} />
-          <Button title="Statistics" onPress={() => router.push('/statistics')} />
+          <Button title="Calorie Tracker" onPress={() => router.push('/calorie-tracker')} /> 
           <Button title="Profile" onPress={() => router.push('/profile')} />
+        </View>
+        <View style={styles.content}>
+          <Slot />
         </View>
       </View>
     </UserProvider>
@@ -28,7 +27,6 @@ const Layout = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between',
   },
   navbar: {
     height: 60,
@@ -36,8 +34,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: '#eee',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
   content: {
     flex: 1,
