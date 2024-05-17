@@ -3,29 +3,32 @@ import { View, StyleSheet, Button } from 'react-native';
 import { Slot, useRouter } from 'expo-router';
 import { UserProvider } from '../context/UserContext'; // Preverite pot
 
-const Layout = () => {
-  const router = useRouter();
-
-  return (
-    <UserProvider>
-      <View style={styles.container}>
-        <View style={styles.navbar}>
-          <Button title="Home" onPress={() => router.push('/')} />
-          <Button title="Register" onPress={() => router.push('/register')} />
-          <Button title="Login" onPress={() => router.push('/login')} />
-          <Button title="Profile" onPress={() => router.push('/profile')} />
+  const Layout = () => {
+    const router = useRouter();
+  
+    return (
+      <UserProvider>
+        <View style={styles.container}>
+          <View style={styles.content}>
+            <Slot />
+          </View>
+          <View style={styles.navbar}>
+            <Button title="Home" onPress={() => router.push('/')} />
+            <Button title="Register" onPress={() => router.push('/register')} />
+            <Button title="Login" onPress={() => router.push('/login')} />
+            <Button title="Profile" onPress={() => router.push('/profile')} />
+            <Button title="Hrana" onPress={() => router.push('/')} />
+          </View>
         </View>
-        <View style={styles.content}>
-          <Slot />
-        </View>
-      </View>
-    </UserProvider>
-  );
-};
+      </UserProvider>
+    );
+  };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
   },
   navbar: {
     height: 60,
