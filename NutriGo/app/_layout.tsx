@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, Button } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Slot, useRouter } from 'expo-router';
-import { UserProvider } from '../context/UserContext'; // Preverite pot
+import { UserProvider } from '../context/UserContext'; 
+import Ionicons from 'react-native-vector-icons/Ionicons'; 
 
 const Layout = () => {
   const router = useRouter();
@@ -13,12 +14,21 @@ const Layout = () => {
           <Slot />
         </View>
         <View style={styles.navbar}>
-          <Button title="Home" onPress={() => router.push('/')} />
-          <Button title="Register" onPress={() => router.push('/register')} />
-          <Button title="Login" onPress={() => router.push('/login')} />
-          <Button title="Calorie Tracker" onPress={() => router.push('/calorie-tracker')} />
-          <Button title="Statistics" onPress={() => router.push('/statistics')} />
-          <Button title="Profile" onPress={() => router.push('/profile')} />
+          <TouchableOpacity onPress={() => router.push('/')}>
+            <Ionicons name="book" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/login')}>
+            <Ionicons name="log-in-sharp" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/calorie-tracker')}>
+            <Ionicons name="nutrition" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/statistics')}>
+            <Ionicons name="stats-chart" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/profile')}>
+            <Ionicons name="person" size={24} color="black" />
+          </TouchableOpacity>
         </View>
       </View>
     </UserProvider>
