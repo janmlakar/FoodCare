@@ -8,5 +8,7 @@ export interface User {
     weight: number;
     activityLevel: 'low' | 'medium' | 'high';
     goal: 'weight_loss' | 'muscle_gain' | 'maintenance';
+    gender: 'male' | 'female' | 'other'; 
+    image?: string | null; // Optional property
   }
   

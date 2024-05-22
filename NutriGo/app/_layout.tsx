@@ -17,9 +17,6 @@ const Layout = () => {
           <TouchableOpacity onPress={() => router.push('/')}>
             <Ionicons name="book" size={24} color="black" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/login')}>
-            <Ionicons name="log-in-sharp" size={24} color="black" />
-          </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/calorie-tracker')}>
             <Ionicons name="nutrition" size={24} color="black" />
           </TouchableOpacity>

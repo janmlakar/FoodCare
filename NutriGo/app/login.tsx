@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor:  '#c1d6c5',
+    backgroundColor:  '#badeb4',
     borderRadius: 5,
   },
   registerButtonText: {

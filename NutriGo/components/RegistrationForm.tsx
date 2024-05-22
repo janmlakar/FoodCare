@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { auth } from '../firebase/firebase'; // Only import what you use
+import { auth, firestore } from '../firebase/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { User } from '../models/User';
 
 const RegistrationForm = ({ onSubmit }: { onSubmit: (user: User) => void }) => {
@@ -15,7 +16,8 @@ const RegistrationForm = ({ onSubmit }: { onSubmit: (user: User) => void }) => {
     weight: '',
     activityLevel: 'low',
     goal: 'weight_loss',
-    name: ''
+    name: '',
+    gender: 'male',
   });
   const [message, setMessage] = useState<string | null>(null);
 
@@ -28,21 +30,24 @@ const RegistrationForm = ({ onSubmit }: { onSubmit: (user: User) => void }) => {
       const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
       const firebaseUser = userCredential.user;
       if (firebaseUser) {
-        console.log("User added with ID: ", firebaseUser.uid);
         const updatedUser = {
           ...user,
           id: firebaseUser.uid,
           age: parseInt(user.age),
           height: parseInt(user.height),
-          weight: parseInt(user.weight)
+          weight: parseInt(user.weight),
         };
+
+        // Save user data to Firestore
+        await setDoc(doc(firestore, 'users', firebaseUser.uid), updatedUser);
+
         onSubmit(updatedUser);
         setMessage('Registration Successful!');
       }
-    } catch (error: unknown) {
+    } catch (error) {
       let errorMessage = 'Registration Failed. Please try again.';
       if (error instanceof Error && 'code' in error) {
-        const firebaseError = error as { code: string }; // Type assertion
+        const firebaseError = error as { code: string };
         if (firebaseError.code === 'auth/weak-password') {
           errorMessage = 'Password should be at least 6 characters';
         } else if (firebaseError.code === 'auth/email-already-in-use') {
@@ -52,7 +57,6 @@ const RegistrationForm = ({ onSubmit }: { onSubmit: (user: User) => void }) => {
         }
       }
       setMessage(errorMessage);
-      console.error("Error adding user: ", error);
     }
   };
 
@@ -64,61 +68,64 @@ const RegistrationForm = ({ onSubmit }: { onSubmit: (user: User) => void }) => {
           {message}
         </Text>
       )}
-
       <TextInput
         style={styles.input}
         placeholder="Name"
         value={user.name}
-        onChangeText={value => handleInputChange('name', value)}
+        onChangeText={(value) => handleInputChange('name', value)}
         placeholderTextColor="#999"
       />
-
       <TextInput
         style={styles.input}
         placeholder="Email"
         value={user.email}
-        onChangeText={value => handleInputChange('email', value)}
+        onChangeText={(value) => handleInputChange('email', value)}
         keyboardType="email-address"
         autoCapitalize="none"
         placeholderTextColor="#999"
       />
-
       <TextInput
         style={styles.input}
         placeholder="Password"
         value={user.password}
-        onChangeText={value => handleInputChange('password', value)}
+        onChangeText={(value) => handleInputChange('password', value)}
         secureTextEntry
         placeholderTextColor="#999"
       />
-
       <TextInput
         style={styles.input}
         placeholder="Age"
         value={user.age}
-        onChangeText={value => handleInputChange('age', value)}
+        onChangeText={(value) => handleInputChange('age', value)}
         keyboardType="numeric"
         placeholderTextColor="#999"
       />
-
       <TextInput
         style={styles.input}
         placeholder="Height (cm)"
         value={user.height}
-        onChangeText={value => handleInputChange('height', value)}
+        onChangeText={(value) => handleInputChange('height', value)}
         keyboardType="numeric"
         placeholderTextColor="#999"
       />
-
       <TextInput
         style={styles.input}
         placeholder="Weight (kg)"
         value={user.weight}
-        onChangeText={value => handleInputChange('weight', value)}
+        onChangeText={(value) => handleInputChange('weight', value)}
         keyboardType="numeric"
         placeholderTextColor="#999"
       />
-
+      <Text style={styles.label}>Gender</Text>
+      <Picker
+        selectedValue={user.gender}
+        onValueChange={(itemValue) => handleInputChange('gender', itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="Male" value="male" />
+        <Picker.Item label="Female" value="female" />
+        <Picker.Item label="Other" value="other" />
+      </Picker>
       <Text style={styles.label}>Activity Level</Text>
       <Picker
         selectedValue={user.activityLevel}
@@ -129,7 +136,6 @@ const RegistrationForm = ({ onSubmit }: { onSubmit: (user: User) => void }) => {
         <Picker.Item label="Medium" value="medium" />
         <Picker.Item label="High" value="high" />
       </Picker>
-
       <Text style={styles.label}>Goal</Text>
       <Picker
         selectedValue={user.goal}
@@ -140,7 +146,6 @@ const RegistrationForm = ({ onSubmit }: { onSubmit: (user: User) => void }) => {
         <Picker.Item label="Gain Muscle" value="muscle_gain" />
         <Picker.Item label="Maintenance" value="maintenance" />
       </Picker>
-
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
