@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 5,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#000000',
   },
   buttonGroup: {
     flexDirection: 'row',
@@ -213,14 +213,14 @@ const styles = StyleSheet.create({
   },
   selectButton: {
     padding: 10,
-    backgroundColor: '#d6ded5',
+    backgroundColor: '#cadefc',
     borderRadius: 8,
     alignItems: 'center',
     flex: 1,
     marginHorizontal: 5,
   },
   selectedButton: {
-    backgroundColor: '#e8c227',
+    backgroundColor: '#cca8e9',
   },
   button: {
     width: '100%',
@@ -231,13 +231,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: ' #000000',
     fontSize: 13,
     fontWeight: 'bold',
   },
   logoutButton: {
     padding: 13,
-    backgroundColor: '#f44336',
+    backgroundColor:'#cadefc',
     borderRadius: 8,
     alignItems: 'center',
     marginVertical: 8,

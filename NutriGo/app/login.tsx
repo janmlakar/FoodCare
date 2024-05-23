@@ -96,13 +96,13 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     padding: 15,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#cca8e9',
     borderRadius: 8,
     alignItems: 'center',
     marginVertical: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: '#000000',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor:  '#badeb4',
+    backgroundColor:  '#c3bef0',
     borderRadius: 5,
   },
   registerButtonText: {
