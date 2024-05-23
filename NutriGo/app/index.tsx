@@ -6,16 +6,14 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  FlatList,
   Image,
   Modal,
-  ScrollView,
   Linking,
   TouchableHighlight,
+  ScrollView,
   Button,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { FontAwesome } from '@expo/vector-icons'; // Dodan za zeleno kljukico
 
 interface Recipe {
   label: string;
@@ -102,7 +100,7 @@ export default function App() {
     }
 
     const url = `https://api.edamam.com/search?${params.toString()}`;
-    console.log(url); // Za preverjanje končnega URL-ja
+    console.log('Fetching URL:', url); // Za preverjanje končnega URL-ja
 
     fetch(url, {
       method: 'GET',
@@ -121,7 +119,7 @@ export default function App() {
       })
       .then(data => {
         if (data.hits) {
-          const filteredRecipes = data.hits.map((hit: any) => hit.recipe).filter((recipe: Recipe) => recipe.calories <= parseFloat(calories));
+          const filteredRecipes = data.hits.map((hit: any) => hit.recipe).filter((recipe: Recipe) => !calories || recipe.calories <= parseFloat(calories));
           setData(filteredRecipes);
         } else {
           setData([]);
@@ -205,7 +203,7 @@ export default function App() {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+    <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
         <Text style={styles.title}>Recipe Search</Text>
         <TextInput
@@ -260,41 +258,33 @@ export default function App() {
           <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
         {loading && <Text>Loading...</Text>}
-        {data && (
-          <FlatList
-            data={data}
-            keyExtractor={(item, index) => index.toString()}
-            ListHeaderComponent={<></>}
-            ListFooterComponent={<Button title="Close Images" onPress={closeImages} />}
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => openModal(item)}>
-                <LinearGradient
-                  colors={['#e6e6fa', '#ffe4e1']} // Pastelno svetlo vijolična in rožnata
-                  style={styles.recipeContainer}
-                >
-                  <Image source={{ uri: item.image }} style={styles.image} />
-                  <View style={styles.recipeContent}>
-                    <Text style={styles.recipeTitle}>{item.label}</Text>
-                    {renderNutrients(item.totalNutrients, item.calories)}
-                    <Text style={styles.recipeSource}>Source: {item.source}</Text>
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-            )}
-          />
-        )}
-        {selectedRecipe && (
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={closeModal}
-          >
-            <ScrollView
-              contentContainerStyle={styles.modalScrollViewContent}
-              showsVerticalScrollIndicator={false}
+        {data && data.map((item, index) => (
+          <TouchableOpacity key={index} onPress={() => openModal(item)}>
+            <LinearGradient
+              colors={['#e6e6fa', '#ffe4e1']} // Pastelno svetlo vijolična in rožnata
+              style={styles.recipeContainer}
             >
-              <View style={styles.modalContainer}>
+              <Image source={{ uri: item.image }} style={styles.image} />
+              <View style={styles.recipeContent}>
+                <Text style={styles.recipeTitle}>{item.label}</Text>
+                {renderNutrients(item.totalNutrients, item.calories)}
+                <Text style={styles.recipeSource}>Source: {item.source}</Text>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        ))}
+        {data && <Button title="Close Images" onPress={closeImages} />}
+      </View>
+      {selectedRecipe && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={closeModal}
+        >
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <ScrollView contentContainerStyle={styles.modalScrollViewContent}>
                 <Text style={styles.modalTitle}>{selectedRecipe.label}</Text>
                 <Image source={{ uri: selectedRecipe.image }} style={styles.imageModal} />
                 {renderNutrients(selectedRecipe.totalNutrients, selectedRecipe.calories)}
@@ -318,23 +308,24 @@ export default function App() {
                 >
                   <Text style={styles.textStyle}>Close</Text>
                 </TouchableHighlight>
-              </View>
-            </ScrollView>
-          </Modal>
-        )}
-      </View>
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+      )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 20,
-  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    padding: 20,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingVertical: 20,
   },
   title: {
     fontSize: 24,
@@ -517,15 +508,22 @@ const styles = StyleSheet.create({
   nutrientDotCarb: {
     color: 'red',
   },
-  modalScrollViewContent: {
-    padding: 20,
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalScrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
   },
   modalContainer: {
+    width: '90%',
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 20,
-    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -534,8 +532,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    width: '90%',
-    marginVertical: 20,
   },
   modalTitle: {
     fontSize: 24,
@@ -566,3 +562,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
