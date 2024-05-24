@@ -35,35 +35,35 @@ interface Recipe {
   ingredientLines: string[];
 }
 
+
 const dietOptions = [
   'balanced',
   'high-fiber',
   'high-protein',
-  'keto',
-  'kidney-friendly',
-  'kosher',
   'low-carb',
   'low-fat',
-  'low-potassium',
   'low-sodium',
-  'no-oil-added',
-  'no-sugar',
-  'paleo',
-  'pescatarian',
-  'pork-free',
-  'red-meat-free',
-  'sugar-conscious',
-  'vegan',
-  'vegetarian',
+ 
 ];
 
 const healthOptions = [
+  'low-potassium',//health
+  'no-oil-added',//health
+  'paleo',//heal
+  'pescatarian',//
+  'pork-free',//
+  'red-meat-free',//
+  'sugar-conscious',//
+  'vegetarian',//
   'gluten-free',
   'dairy-free',
   'peanut-free',
   'tree-nut-free',
+  'low-sugar',
+  'keto-friendly',
+  'kidney-friendly',
+  'kosher',
   'vegan',
-  'vegetarian',
 ];
 
 export default function App() {
@@ -85,9 +85,9 @@ export default function App() {
   const fetchRecipes = () => {
     setLoading(true);
     const params = new URLSearchParams();
-    params.append('q', query);
     params.append('app_id', '900da95e');
     params.append('app_key', '40698503668e0bb3897581f4766d77f9');
+    params.append('q', query);
 
     if (healthLabels.length > 0) {
       healthLabels.forEach(label => params.append('health', label));
@@ -213,7 +213,7 @@ export default function App() {
           onChangeText={setQuery}
         />
         <View style={styles.filters}>
-          <Text style={styles.filterTitle}>Allergies</Text>
+          <Text style={styles.filterTitle}>Health</Text>
           {healthOptions.map(label => (
             <TouchableOpacity key={label} onPress={() => toggleLabel(label, setHealthLabels)}>
               <Text
