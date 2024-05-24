@@ -35,7 +35,6 @@ interface Recipe {
   ingredientLines: string[];
 }
 
-
 const dietOptions = [
   'balanced',
   'high-fiber',
@@ -43,18 +42,17 @@ const dietOptions = [
   'low-carb',
   'low-fat',
   'low-sodium',
- 
 ];
 
 const healthOptions = [
-  'low-potassium',//health
-  'no-oil-added',//health
-  'paleo',//heal
-  'pescatarian',//
-  'pork-free',//
-  'red-meat-free',//
-  'sugar-conscious',//
-  'vegetarian',//
+  'low-potassium',
+  'no-oil-added',
+  'paleo',
+  'pescatarian',
+  'pork-free',
+  'red-meat-free',
+  'sugar-conscious',
+  'vegetarian',
   'gluten-free',
   'dairy-free',
   'peanut-free',
@@ -214,28 +212,13 @@ export default function App() {
         />
         <View style={styles.filters}>
           <Text style={styles.filterTitle}>Health</Text>
-          {healthOptions.map(label => (
-            <TouchableOpacity key={label} onPress={() => toggleLabel(label, setHealthLabels)}>
-              <Text
-                style={[
-                  styles.filterButton,
-                  { backgroundColor: healthLabels.includes(label) ? '#cca8e9' : '#cadefc' },
-                ]}
-              >
-                {label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        <View style={styles.filters}>
-          <Text style={styles.filterTitle}>Diets</Text>
-          <View style={styles.dietContainer}>
-            {dietOptions.map(label => (
-              <TouchableOpacity key={label} onPress={() => toggleLabel(label, setDietLabels)}>
+          <View style={styles.healthContainer}>
+            {healthOptions.map(label => (
+              <TouchableOpacity key={label} onPress={() => toggleLabel(label, setHealthLabels)}>
                 <Text
                   style={[
-                    styles.dietButton,
-                    { backgroundColor: dietLabels.includes(label) ? '#cca8e9' : '#cadefc' },
+                    styles.healthButton,
+                    { backgroundColor: healthLabels.includes(label) ? '#cca8e9' : '#cadefc' },
                   ]}
                 >
                   {label}
@@ -243,6 +226,21 @@ export default function App() {
               </TouchableOpacity>
             ))}
           </View>
+        </View>
+        <View style={styles.filters}>
+          <Text style={styles.filterTitle}>Diets</Text>
+          {dietOptions.map(label => (
+            <TouchableOpacity key={label} onPress={() => toggleLabel(label, setDietLabels)}>
+              <Text
+                style={[
+                  styles.filterButton,
+                  { backgroundColor: dietLabels.includes(label) ? '#cca8e9' : '#cadefc' },
+                ]}
+              >
+                {label}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
         <View style={styles.calorieContainer}>
           <Text style={styles.calorieLabel}>Max Calories:</Text>
@@ -261,7 +259,7 @@ export default function App() {
         {data && data.map((item, index) => (
           <TouchableOpacity key={index} onPress={() => openModal(item)}>
             <LinearGradient
-              colors={['#e6e6fa', '#ffe4e1']} // Pastelno svetlo vijolična in rožnata
+              colors={['#e6e6fa', '#ffe4e1']}
               style={styles.recipeContainer}
             >
               <Image source={{ uri: item.image }} style={styles.image} />
@@ -332,7 +330,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 20,
-    color: '#cca8e9', // Svetlo vijolična barva
+    color: '#cca8e9',
   },
   input: {
     height: 40,
@@ -349,7 +347,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginVertical: 10,
-    color: '#000', // Črna barva
+    color: '#000',
   },
   filterButton: {
     padding: 10,
@@ -358,6 +356,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginRight: 10,
   },
+  healthContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  healthButton: {
+    padding: 10,
+    borderRadius: 50,
+    textAlign: 'center',
+    marginBottom: 10,
+    marginRight: 10,
+    minWidth: '22%',
+  },
   dietContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -365,11 +376,11 @@ const styles = StyleSheet.create({
   },
   dietButton: {
     padding: 10,
-    borderRadius: 50, // Eliptična oblika
+    borderRadius: 5,
     textAlign: 'center',
     marginBottom: 10,
     marginRight: 10,
-    minWidth: '22%', // Približno štiri v vrsti
+    minWidth: '22%',
   },
   calorieContainer: {
     flexDirection: 'row',
@@ -378,7 +389,7 @@ const styles = StyleSheet.create({
   },
   calorieLabel: {
     fontSize: 16,
-    color: '#000', // Črna barva
+    color: '#000',
     marginRight: 10,
   },
   calorieInput: {
@@ -387,7 +398,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 10,
     borderRadius: 5,
-    width: 100, // Manjša širina vnosa kalorij
+    width: 100,
   },
   searchButton: {
     paddingVertical: 10,
@@ -395,7 +406,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignSelf: 'center',
     marginBottom: 20,
-    backgroundColor: '#cca8e9', // Dodana barva ozadja
+    backgroundColor: '#cca8e9',
   },
   searchButtonText: {
     color: 'white',
@@ -419,16 +430,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginVertical: 10,
-    color: '#000000', // Črna barva
+    color: '#000000',
   },
   recipeSource: {
     fontSize: 14,
-    color: '#000000', // Črna barva
+    color: '#000000',
     marginTop: 10,
   },
   recipeText: {
     fontSize: 14,
-    color: '#000000', // Črna barva
+    color: '#000000',
   },
   image: {
     width: '100%',
@@ -460,10 +471,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   nutrientColumn: {
-    width: '45%', // Ustvarja razmik od ločilne črte
+    width: '45%',
   },
   leftNutrientRow: {
-    paddingRight: 10, // Dodan razmik od ločilne črte
+    paddingRight: 10,
   },
   nutrientRow: {
     flexDirection: 'row',
@@ -562,4 +573,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
