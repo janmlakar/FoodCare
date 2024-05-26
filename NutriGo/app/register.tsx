@@ -1,30 +1,40 @@
 import React from 'react';
-import { ScrollView, View, StyleSheet } from 'react-native';
-import RegistrationFormWrapper from '@/components/RegistrationFormWrapper';
+import { ScrollView, View, StyleSheet, Dimensions } from 'react-native';
+import RegistrationForm from '../components/RegistrationForm';
+import { User } from '../models/User';
+import StatusBarBackground from '../components/StatusBarBackground';
+
+
+const { width } = Dimensions.get('window');
 
 const Register = () => {
+  const handleUserSubmit = (user: User) => {
+    console.log('User registered:', user);
+  };
+
   return (
-    <ScrollView 
-      contentContainerStyle={styles.scrollViewContent}
-      horizontal={false}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.container}>
-        <RegistrationFormWrapper />
-      </View>
-    </ScrollView>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.formContainer}>
+          <RegistrationForm onSubmit={handleUserSubmit} />
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1e1e1e', // Background color to match the gradient
+  },
   scrollViewContent: {
     flexGrow: 1,
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    
+  formContainer: {
+    width: '100%', // Make it take full width
   },
 });
 

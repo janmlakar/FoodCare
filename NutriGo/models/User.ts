@@ -1,14 +1,13 @@
 export interface User {
-    id: string;
-    email: string;
-    name: string;
-    password: string;
-    age: number;
-    height: number;
-    weight: number;
-    activityLevel: 'low' | 'medium' | 'high';
-    goal: 'weight_loss' | 'muscle_gain' | 'maintenance';
-    gender: 'male' | 'female' | 'other'; 
-    image?: string | null; // Optional property
-  }
-  
+  id: string;
+  email: string;
+  password: string;
+  image?: string; 
+  age: number;
+  height: number;
+  weight: number;
+  activityLevel: 'low' | 'medium' | 'high' | undefined; // Allow undefined
+  goal: 'weight_loss' | 'muscle_gain' | 'maintenance' | undefined; // Allow undefined
+  name: string;
+  gender: 'male' | 'female' | 'other';
+}

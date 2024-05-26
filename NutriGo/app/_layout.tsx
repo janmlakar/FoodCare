@@ -1,38 +1,69 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Slot, useRouter } from 'expo-router';
-import { UserProvider } from '../context/UserContext'; 
-import Ionicons from 'react-native-vector-icons/Ionicons'; 
+import { UserProvider } from '../context/UserContext';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import ScreenTemplate from './ScreenTemplate';
+import * as NavigationBar from 'expo-navigation-bar';
 
 const Layout = () => {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    NavigationBar.setBackgroundColorAsync('#1a001a'); // Match with the navbar background color
+  }, []);
 
   return (
     <UserProvider>
-      <View style={styles.container}>
-        <View style={styles.content}>
-          <Slot />
-        </View>
-        <View style={styles.navbar}>
-          <TouchableOpacity onPress={() => router.push('/')}>
-            <Ionicons name="book" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/calorie-tracker')}>
-            <Ionicons name="nutrition" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/statistics')}>
-            <Ionicons name="stats-chart" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/profile')}>
-            <Ionicons name="person" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <SafeAreaProvider>
+        <ScreenTemplate>
+          <LinearGradient
+            colors={[
+              'rgba(10,0,30,1)', 
+              'rgba(20,0,40,1)', 
+              'rgba(35,0,55,1)', 
+              'rgba(50,0,70,1)', 
+              'rgba(70,10,90,1)', 
+              'rgba(90,20,110,1)', 
+              'rgba(50,10,70,1)',  // Darker color towards the bottom
+              'rgba(30,5,50,1)'    // Darkest color at the bottom
+            ]}
+            locations={[0, 0.15, 0.35, 0.55, 0.75, 0.9, 0.95, 1]}
+            style={styles.gradientBackground}
+          >
+            <View style={styles.container}>
+              <View style={styles.content}>
+                <Slot />
+              </View>
+              <View style={[styles.navbar, { paddingBottom: insets.bottom }]}>
+                <TouchableOpacity onPress={() => router.push('/')}>
+                  <Ionicons name="book" size={24} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/calorie-tracker')}>
+                  <Ionicons name="nutrition" size={24} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/statistics')}>
+                  <Ionicons name="stats-chart" size={24} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/profile')}>
+                  <Ionicons name="person" size={24} color="white" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </LinearGradient>
+        </ScreenTemplate>
+      </SafeAreaProvider>
     </UserProvider>
   );
 };
 
 const styles = StyleSheet.create({
+  gradientBackground: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     justifyContent: 'space-between',
@@ -42,13 +73,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#eee',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
+    backgroundColor: 'rgba(30,5,50,1)', // Match with the darkest bottom color of the gradient
   },
   content: {
     flex: 1,
-    padding: 16,
   },
 });
 

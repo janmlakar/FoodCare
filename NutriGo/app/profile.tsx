@@ -1,21 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useUser } from '../context/UserContext';
 import { getAuth, signOut } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, firestore } from '../firebase/firebase';
 import { User } from '../models/User';
-import LoginForm from '../app/login'; // Ensure this is the correct path to your LoginForm component
-import { MaterialIcons } from '@expo/vector-icons'; // Import icon library
+import LoginForm from '../app/login';
+import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import ScreenTemplate from './ScreenTemplate'; 
+import StatusBarBackground from '../components/StatusBarBackground';
+
 
 const Profile: React.FC = () => {
   const { user, setUser } = useUser();
   const [localUser, setLocalUser] = useState<User | null>(user);
+  const shimmerAnimation = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
     setLocalUser(user);
   }, [user]);
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnimation, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmerAnimation, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [shimmerAnimation]);
+
+  const shimmerTranslate = shimmerAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-300, 300],
+  });
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -79,99 +106,173 @@ const Profile: React.FC = () => {
     : require('../assets/images/male-icon.png');
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Profile</Text>
-      <View style={styles.imageContainer}>
-        <Image source={localUser?.image ? { uri: localUser.image } : defaultImage} style={styles.profileImage} />
-        <TouchableOpacity style={styles.iconButton} onPress={pickImage}>
-          <MaterialIcons name="edit" size={24} color="black" />
+    <ScreenTemplate>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.title}>Profile</Text>
+        <View style={styles.imageContainer}>
+          <Image source={localUser?.image ? { uri: localUser.image } : defaultImage} style={styles.profileImage} />
+          <TouchableOpacity style={styles.iconButton} onPress={pickImage}>
+            <MaterialIcons name="edit" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.email}>{localUser?.email}</Text>
+        <Text style={styles.label}>Goal</Text>
+        <View style={styles.buttonGroup}>
+          <TouchableOpacity
+            style={[styles.selectButton, localUser?.goal === 'weight_loss' && styles.selectedButton]}
+            onPress={() => handleButtonSelect('goal', 'weight_loss')}
+          >
+            <Text style={styles.buttonText}>Lose Weight</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.selectButton, localUser?.goal === 'muscle_gain' && styles.selectedButton]}
+            onPress={() => handleButtonSelect('goal', 'muscle_gain')}
+          >
+            <Text style={styles.buttonText}>Gain Muscle</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.selectButton, localUser?.goal === 'maintenance' && styles.selectedButton]}
+            onPress={() => handleButtonSelect('goal', 'maintenance')}
+          >
+            <Text style={styles.buttonText}>Maintenance</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.label}>Activity Level</Text>
+        <View style={styles.buttonGroup}>
+          <TouchableOpacity
+            style={[styles.selectButton, localUser?.activityLevel === 'low' && styles.selectedButton]}
+            onPress={() => handleButtonSelect('activityLevel', 'low')}
+          >
+            <Text style={styles.buttonText}>Low</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.selectButton, localUser?.activityLevel === 'medium' && styles.selectedButton]}
+            onPress={() => handleButtonSelect('activityLevel', 'medium')}
+          >
+            <Text style={styles.buttonText}>Medium</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.selectButton, localUser?.activityLevel === 'high' && styles.selectedButton]}
+            onPress={() => handleButtonSelect('activityLevel', 'high')}
+          >
+            <Text style={styles.buttonText}>High</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.label}>Height (cm)</Text>
+        <View style={styles.inputContainer}>
+          <LinearGradient
+            colors={['#8A2BE2', '#4B0082']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientBorder}
+          >
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Height (cm)"
+                value={localUser?.height?.toString() || ''}
+                onChangeText={(value) => handleInputChange('height', parseInt(value))}
+                keyboardType="numeric"
+                placeholderTextColor="#999"
+              />
+            </View>
+          </LinearGradient>
+          <Animated.View
+            style={[
+              styles.shimmerOverlay,
+              { transform: [{ translateX: shimmerTranslate }] },
+            ]}
+          >
+            <LinearGradient
+              colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
+              start={{ x: 0, y: 1 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+          </Animated.View>
+        </View>
+        <Text style={styles.label}>Weight (kg)</Text>
+        <View style={styles.inputContainer}>
+          <LinearGradient
+            colors={['#8A2BE2', '#4B0082']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientBorder}
+          >
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Weight (kg)"
+                value={localUser?.weight?.toString() || ''}
+                onChangeText={(value) => handleInputChange('weight', parseInt(value))}
+                keyboardType="numeric"
+                placeholderTextColor="#999"
+              />
+            </View>
+          </LinearGradient>
+          <Animated.View
+            style={[
+              styles.shimmerOverlay,
+              { transform: [{ translateX: shimmerTranslate }] },
+            ]}
+          >
+            <LinearGradient
+              colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
+              start={{ x: 0, y: 1 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+          </Animated.View>
+        </View>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <View style={styles.logoutButtonContent}>
+            <LinearGradient
+              colors={['#ff007f', '#ff80bf', '#ff007f']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <Animated.View
+              style={[
+                styles.shimmerOverlay,
+                { transform: [{ translateX: shimmerTranslate }] },
+              ]}
+            >
+              <LinearGradient
+                colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
+                start={{ x: 0, y: 1 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+            </Animated.View>
+            <Text style={styles.buttonText}>Logout</Text>
+          </View>
         </TouchableOpacity>
-      </View>
-      <Text style={styles.email}>{localUser?.email}</Text>
-      <Text style={styles.label}>Goal</Text>
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity
-          style={[styles.selectButton, localUser?.goal === 'weight_loss' && styles.selectedButton]}
-          onPress={() => handleButtonSelect('goal', 'weight_loss')}
-        >
-          <Text style={styles.buttonText}>Lose Weight</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.selectButton, localUser?.goal === 'muscle_gain' && styles.selectedButton]}
-          onPress={() => handleButtonSelect('goal', 'muscle_gain')}
-        >
-          <Text style={styles.buttonText}>Gain Muscle</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.selectButton, localUser?.goal === 'maintenance' && styles.selectedButton]}
-          onPress={() => handleButtonSelect('goal', 'maintenance')}
-        >
-          <Text style={styles.buttonText}>Maintenance</Text>
-        </TouchableOpacity>
-      </View>
-      <Text style={styles.label}>Activity Level</Text>
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity
-          style={[styles.selectButton, localUser?.activityLevel === 'low' && styles.selectedButton]}
-          onPress={() => handleButtonSelect('activityLevel', 'low')}
-        >
-          <Text style={styles.buttonText}>Low</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.selectButton, localUser?.activityLevel === 'medium' && styles.selectedButton]}
-          onPress={() => handleButtonSelect('activityLevel', 'medium')}
-        >
-          <Text style={styles.buttonText}>Medium</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.selectButton, localUser?.activityLevel === 'high' && styles.selectedButton]}
-          onPress={() => handleButtonSelect('activityLevel', 'high')}
-        >
-          <Text style={styles.buttonText}>High</Text>
-        </TouchableOpacity>
-      </View>
-      <Text style={styles.label}>Height (cm)</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Height (cm)"
-        value={localUser?.height?.toString() || ''}
-        onChangeText={(value) => handleInputChange('height', parseInt(value))}
-        keyboardType="numeric"
-        placeholderTextColor="#999"
-      />
-      <Text style={styles.label}>Weight (kg)</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Weight (kg)"
-        value={localUser?.weight?.toString() || ''}
-        onChangeText={(value) => handleInputChange('weight', parseInt(value))}
-        keyboardType="numeric"
-        placeholderTextColor="#999"
-      />
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.buttonText}>Logout</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </ScreenTemplate>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f5f5f5',
+  },
+  container: {
+    width: '100%',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
     marginBottom: 20,
   },
   imageContainer: {
     position: 'relative',
     marginBottom: 20,
+    alignItems: 'center',
   },
   profileImage: {
     width: 100,
@@ -188,23 +289,45 @@ const styles = StyleSheet.create({
   },
   email: {
     fontSize: 18,
-    color: '#333',
+    color: '#fff',
     marginBottom: 20,
-  },
-  input: {
-    width: '100%',
-    padding: 12,
-    marginVertical: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    textAlign: 'center',
   },
   label: {
     width: '100%',
     marginBottom: 5,
     fontWeight: 'bold',
-    color: '#000000',
+    color: '#fff',
+  },
+  inputContainer: {
+    width: '100%',
+    marginVertical: 10,
+    borderRadius: 25,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 25,
+    elevation: 10,
+  },
+  gradientBorder: {
+    padding: 2,
+    borderRadius: 25,
+  },
+  inputWrapper: {
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
+  input: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 25,
+    color: '#000',
+  },
+  shimmerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.5,
   },
   buttonGroup: {
     flexDirection: 'row',
@@ -213,34 +336,40 @@ const styles = StyleSheet.create({
   },
   selectButton: {
     padding: 10,
-    backgroundColor: '#cadefc',
-    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
     alignItems: 'center',
     flex: 1,
     marginHorizontal: 5,
   },
   selectedButton: {
-    backgroundColor: '#cca8e9',
-  },
-  button: {
-    width: '100%',
-    padding: 15,
-    backgroundColor: '#4CAF50',
-    borderRadius: 8,
-    alignItems: 'center',
-    marginVertical: 10,
+    backgroundColor: '#ff007f',
   },
   buttonText: {
-    color: ' #000000',
+    color: 'white',
     fontSize: 13,
     fontWeight: 'bold',
   },
   logoutButton: {
-    padding: 13,
-    backgroundColor:'#cadefc',
-    borderRadius: 8,
+    width: '80%', // Make the button narrower
+    marginVertical: 5,
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
+  logoutButtonContent: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 8,
+    justifyContent: 'center',
+    borderRadius: 25,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    backgroundColor: '#ff007f',
+    shadowColor: '#ff007f',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 10,
   },
 });
 
