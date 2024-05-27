@@ -20,5 +20,6 @@ const FoodItem = ({ item } : FoodItemProps) => {
                 </View>
         );
     };
-    
+
   export default FoodItem;
+  export {FoodItemProps}
