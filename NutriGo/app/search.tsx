@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 10,
     gap: 10,
+    paddingTop: 50,
   },
   input: {
     padding: 10,
@@ -36,13 +37,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const foodItems = [
-  { label: 'Jabolko', cal: 120, brand: 'Podgrajšek' },
-  { label: 'Pica', cal: 680, brand: 'Lovska Koča' },
-  { label: 'Pomfri', cal: 350, brand: 'McDonalds' },
-]
-
-export default function CalorieTracker() {
+export default function Search() {
   const [search, setSearch] = useState('');
 
   const [runSearch, {data, loading, error}] = useLazyQuery(query);
@@ -67,7 +62,6 @@ export default function CalorieTracker() {
   const items = data?.search?.hints || [];
 
   return (
-    //testni seznam
     <View style={styles.container}>
       <TextInput value={search} onChangeText={setSearch} placeholder='Search...' style={styles.input} />
       {search && <Button title='Search' onPress={performSearch} />}

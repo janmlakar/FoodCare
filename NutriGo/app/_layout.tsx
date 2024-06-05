@@ -53,7 +53,7 @@ const Layout = () => {
                   <TouchableOpacity onPress={() => router.push('/')}>
                     <Ionicons name="book" size={24} color="white" />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push('/calorie-tracker')}>
+                  <TouchableOpacity onPress={() => router.push('/tracker')}>
                     <Ionicons name="nutrition" size={24} color="white" />
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => router.push('/statistics')}>
