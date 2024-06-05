@@ -38,6 +38,7 @@ export default function Tracker() {
                     <FlatList
                         data={foodItems}
                         renderItem={({ item }) => <FoodItem item={item} />}
+                        contentContainerStyle={{ gap: 5 }}
                     />
                 </View>
             </SafeAreaView>
