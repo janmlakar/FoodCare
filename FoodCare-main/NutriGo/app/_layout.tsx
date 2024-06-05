@@ -45,7 +45,7 @@ const Layout = () => {
                 {pathname === '/statistics' && <PinkDot />}
               </NavButton>
               <FloatingButtonContainer>
-                <TouchableOpacity onPress={() => router.push('/search')}>
+                <TouchableOpacity onPress={() => router.push('/')}>
                   <LinearGradient
                     colors={['#4F6EF6', '#87CEFA']}
                     start={{ x: 0, y: 0 }}
