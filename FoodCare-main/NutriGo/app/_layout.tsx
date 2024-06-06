@@ -1,7 +1,8 @@
+// app/_layout.tsx
 import React, { useEffect } from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { Slot, useRouter, usePathname } from 'expo-router';
-import { UserProvider } from '../context/UserContext';
+import { UserProvider, useUser } from '../context/UserContext'; // Ensure correct import
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as NavigationBar from 'expo-navigation-bar';
@@ -37,17 +38,17 @@ const Layout = () => {
             </Content>
             <Navbar paddingBottom={insets.bottom}>
               <NavButton onPress={() => router.push('/')}>
-                <Ionicons name="home" size={24} color="purple" />
+                <Ionicons name="home" size={24} color={pathname === '/' ? "pink" : "grey"} />
                 {pathname === '/' && <PinkDot />}
               </NavButton>
               <NavButton onPress={() => router.push('/statistics')}>
-                <Ionicons name="stats-chart" size={24} color="grey" />
+                <Ionicons name="stats-chart" size={24} color={pathname === '/statistics' ? "pink" : "grey"} />
                 {pathname === '/statistics' && <PinkDot />}
               </NavButton>
               <FloatingButtonContainer>
                 <TouchableOpacity onPress={() => router.push('/')}>
                   <LinearGradient
-                    colors={['#4F6EF6', '#87CEFA']}
+                    colors={['#92A3FD', '#9DCEFF']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.floatingButton}
@@ -57,11 +58,11 @@ const Layout = () => {
                 </TouchableOpacity>
               </FloatingButtonContainer>
               <NavButton onPress={() => router.push('/calorie-tracker')}>
-                <Ionicons name="camera" size={24} color="grey" />
+                <Ionicons name="camera" size={24} color={pathname === '/calorie-tracker' ? "pink" : "grey"} />
                 {pathname === '/calorie-tracker' && <PinkDot />}
               </NavButton>
-              <NavButton onPress={() => router.push('/profile')}>
-                <Ionicons name="person" size={24} color="grey" />
+              <NavButton onPress={() => router.push('/login')}>
+                <Ionicons name="person" size={24} color={pathname === '/profile' ? "pink" : "grey"} />
                 {pathname === '/profile' && <PinkDot />}
               </NavButton>
             </Navbar>
@@ -111,7 +112,7 @@ const FloatingButtonContainer = styled.View`
   width: 100%;
   align-items: center;
   justify-content: center; /* Ensures the container is centered */
-  padding-left: 16px; /* Adjust to move slightly to the right */
+  padding-left: 20px; /* Adjust to move slightly to the right */
   z-index: 1;
 `;
 

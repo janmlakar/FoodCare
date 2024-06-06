@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Text, Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { auth, firestore } from '../firebase/firebase';
-import { addDoc, collection } from "firebase/firestore";
+import { setDoc, doc } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { User } from '../models/User';
 import { LinearGradient } from 'expo-linear-gradient';
-import { commonStyles } from '../css/commonStyles';
 
 const { width } = Dimensions.get('window');
 
@@ -41,9 +40,9 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
       const firebaseUser = userCredential.user;
       if (firebaseUser) {
         console.log("User added with ID: ", firebaseUser.uid);
-        setUser({ ...user, id: firebaseUser.uid });
-        await addDoc(collection(firestore, "users"), { ...user, id: firebaseUser.uid });
-        onSubmit(user);
+        const userData = { ...user, id: firebaseUser.uid };
+        await setDoc(doc(firestore, "users", firebaseUser.uid), userData);
+        onSubmit(userData);
         setAlertMessage('Registration Successful!');
         setAlertVisible(true);
       }
@@ -158,6 +157,23 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
             colors={['#92a3fd', '#9dceff']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
+            style={[styles.gradientBorder, styles.smallInputContainer]}
+          >
+            <View style={styles.inputWrapper}>
+              <TextInput
+                placeholder="Weight (kg)"
+                value={user.weight ? user.weight.toString() : ''}
+                onChangeText={(value) => handleInputChange('weight', parseInt(value) || 0)}
+                style={styles.smallInput}
+                keyboardType="numeric"
+                placeholderTextColor="#999"
+              />
+            </View>
+          </LinearGradient>
+          <LinearGradient
+            colors={['#92a3fd', '#9dceff']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={styles.gradientBorder}
           >
             <View style={styles.pickerWrapper}>
@@ -207,7 +223,7 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
                 <Picker.Item label="Select Gender" value={undefined} />
                 <Picker.Item label="Male" value="male" />
                 <Picker.Item label="Female" value="female" />
-                <Picker.Item label="Female" value="other" />
+                <Picker.Item label="Other" value="other" />
               </Picker>
             </View>
           </LinearGradient>
@@ -241,7 +257,6 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

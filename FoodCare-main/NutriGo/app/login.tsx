@@ -1,17 +1,21 @@
-// LoginForm.js
 import React, { useState } from 'react';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { auth } from '../firebase/firebase';
+import { auth, firestore } from '../firebase/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { LinearGradient } from 'expo-linear-gradient';
-import { commonStyles } from '../css/commonStyles';
+import { useUser } from '../context/UserContext';
+import SplashScreen from '../components/SplashScreen';
+import { User } from '@/models/User';
 
 const LoginForm = () => {
+  const { setUser } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showSplash, setShowSplash] = useState(true);
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -21,7 +25,21 @@ const LoginForm = () => {
       setSuccess('Login successful!');
       setError('');
       console.log('User logged in:', user);
-      // Po uspešni prijavi lahko preusmerite uporabnika ali izvedete druge akcije
+
+      const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data() as Omit<User, 'id' | 'email'>;
+        setUser({
+          id: user.uid,
+          email: user.email || '',
+          ...userData,
+        });
+        router.push('/profile');
+      } else {
+        setError('No user data available. Please contact support.');
+        setSuccess('');
+        console.error('No user data available.');
+      }
     } catch (error: unknown) {
       let errorMessage = 'Login failed. Please try again.';
       if (error instanceof Error && 'code' in error) {
@@ -40,9 +58,13 @@ const LoginForm = () => {
     }
   };
 
+  if (showSplash) {
+    return <SplashScreen onTimeout={() => setShowSplash(false)} />;
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={commonStyles.title}>Login</Text>
+      <Text style={styles.title}>Login</Text>
       <LinearGradient
         colors={['#92a3fd', '#9dceff']}
         start={{ x: 0, y: 0 }}
@@ -103,14 +125,19 @@ const LoginForm = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f5f5f5', // Ensure this matches the splash screen background color
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
   },
   gradientBorder: {
     width: '100%',

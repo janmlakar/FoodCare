@@ -3,25 +3,29 @@ import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, ScrollView,
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { useUser } from '../context/UserContext';
-import { getAuth, signOut } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, firestore } from '../firebase/firebase';
 import { User } from '../models/User';
-import LoginForm from '../app/login';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import StatusBarBackground from '../components/StatusBarBackground';
+import { useRouter } from 'expo-router';
 
 const Profile: React.FC = () => {
   const { user, setUser } = useUser();
-  const [localUser, setLocalUser] = useState<User | null>(user);
+  const [localUser, setLocalUser] = useState<User | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const shimmerAnimation = useState(new Animated.Value(0))[0];
+  const router = useRouter();
 
   useEffect(() => {
-    setLocalUser(user);
-    if (user?.image) {
-      loadImageBase64(user.image);
+    if (user) {
+      setLocalUser(user);
+      if (user.image) {
+        loadImageBase64(user.image);
+      }
+    } else {
+      setLocalUser(null);
     }
   }, [user]);
 
@@ -49,6 +53,7 @@ const Profile: React.FC = () => {
 
   const loadImageBase64 = async (uri: string) => {
     try {
+      console.log('Loading image from URI:', uri);
       const base64 = await FileSystem.readAsStringAsync(uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
@@ -110,6 +115,7 @@ const Profile: React.FC = () => {
   const handleLogout = async () => {
     await signOut(auth);
     setUser(null);
+    router.push('/login');
   };
 
   const handleInputChange = (field: keyof User, value: string | number) => {
@@ -133,8 +139,12 @@ const Profile: React.FC = () => {
     }
   };
 
-  if (!user) {
-    return <LoginForm />;
+  if (!localUser) {
+    return (
+      <View style={styles.scrollContent}>
+        <Text style={styles.title}>No user data available.</Text>
+      </View>
+    );
   }
 
   const defaultImage = localUser?.gender === 'female'
@@ -151,6 +161,14 @@ const Profile: React.FC = () => {
         </TouchableOpacity>
       </View>
       <Text style={styles.email}>{localUser?.email}</Text>
+      <Text style={styles.label}>Name</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Name"
+        value={localUser?.name || ''}
+        onChangeText={(value) => handleInputChange('name', value)}
+        placeholderTextColor="#999"
+      />
       <Text style={styles.label}>Goal</Text>
       <View style={styles.buttonGroup}>
         <TouchableOpacity
@@ -300,7 +318,6 @@ const Profile: React.FC = () => {
     </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,

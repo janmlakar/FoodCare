@@ -117,7 +117,7 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ visible, onClose, recipe }) =
               )}
               <TouchableOpacity style={modalStyles.closeButtonContainer} onPress={onClose}>
                 <LinearGradient
-                  colors={['#000000', '#000000']}
+                  colors={['#92A3FD', '#9DCEFF']} // Barve za gradient
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={modalStyles.closeButton}
@@ -162,12 +162,12 @@ const modalStyles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#000000', // Black color
+    color: '#000000', // Črna barva
   },
   modalText: {
     fontSize: 16,
     marginVertical: 5,
-    color: '#000000', // Black color
+    color: '#000000', // Črna barva
   },
   imageModal: {
     width: '100%',
@@ -181,12 +181,12 @@ const modalStyles = StyleSheet.create({
     overflow: 'hidden',
   },
   closeButton: {
-    borderRadius: 99,
     paddingVertical: 10,
-    paddingHorizontal: 30,
+    paddingHorizontal: 55,
+    borderRadius: 99,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: 'rgba(0, 0, 0, 0.3)',
+    shadowColor: 'rgba(149, 173, 254, 0.3)',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 22,
@@ -199,7 +199,7 @@ const modalStyles = StyleSheet.create({
     textAlign: 'center',
   },
   link: {
-    color: '#000000', // Black color
+    color: '#000000', // Črna barva
     textDecorationLine: 'underline',
     marginVertical: 10,
   },
@@ -209,12 +209,12 @@ const modalStyles = StyleSheet.create({
   ingredientTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#000000', // Black color
+    color: '#000000', // Črna barva
   },
   ingredient: {
     fontSize: 14,
     marginVertical: 2,
-    color: '#000000', // Black color
+    color: '#000000', // Črna barva
   },
   nutrientsContainer: {
     flexDirection: 'row',

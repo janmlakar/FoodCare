@@ -89,7 +89,7 @@ const RecipeList: React.FC<RecipeListProps> = ({ data, openModal }) => {
       {data && data.map((item, index) => (
         <TouchableOpacity key={index} onPress={() => openModal(item)}>
           <LinearGradient
-            colors={index % 2 === 0 ? ['#92A3FD', '#9DCEFF'] : ['#C58BF2', '#EEA4CE']} // Rožnate barve vsak drugi recept
+            colors={index % 2 === 0 ? ['#FFFFFF','#9DCEFF','#FFFFFF'] : ['#FFFFFF','#FFFFFF']} // Rožnate barve vsak drugi recept
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={[localStyles.recipeContainer, { opacity: 0.9 }]}
