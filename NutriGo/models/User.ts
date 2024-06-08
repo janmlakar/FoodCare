@@ -9,5 +9,5 @@ export interface User {
   activityLevel: 'low' | 'medium' | 'high' | undefined; // Allow undefined
   goal: 'weight_loss' | 'muscle_gain' | 'maintenance' | undefined; // Allow undefined
   name: string;
-  gender: 'male' | 'female' | 'other';
+  gender: 'male' | 'female' | 'other'| undefined;
 }

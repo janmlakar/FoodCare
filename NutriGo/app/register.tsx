@@ -3,6 +3,7 @@ import { ScrollView, View, StyleSheet, Dimensions } from 'react-native';
 import RegistrationForm from '../components/RegistrationForm';
 import { User } from '../models/User';
 import StatusBarBackground from '../components/StatusBarBackground';
+import { commonStyles } from '../css/commonStyles';
 
 
 const { width } = Dimensions.get('window');
