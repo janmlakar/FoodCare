@@ -1,1 +1,0 @@
-export { getReactNativePersistence } from './getReactNativePersistence';
