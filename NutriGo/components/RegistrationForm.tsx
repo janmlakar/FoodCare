@@ -4,8 +4,9 @@ import { Picker } from '@react-native-picker/picker';
 import { auth, firestore } from '../firebase/firebase';
 import { setDoc, doc } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { User } from '../models/User';
+import { ActivityLevel, Goal, User } from '../models/User';
 import { LinearGradient } from 'expo-linear-gradient';
+import { userActivityLevelToText, userGoalToText } from '@/models/functions';
 
 const { width } = Dimensions.get('window');
 
@@ -183,9 +184,9 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
                 style={styles.picker}
               >
                 <Picker.Item label="Select Activity Level" value={undefined} />
-                <Picker.Item label="Low" value="low" />
-                <Picker.Item label="Medium" value="medium" />
-                <Picker.Item label="High" value="high" />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.LOW)} value={ActivityLevel.LOW} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.LOW)} value={ActivityLevel.MEDIUM} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.LOW)} value={ActivityLevel.HIGH} />
               </Picker>
             </View>
           </LinearGradient>
@@ -202,9 +203,9 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
                 style={styles.picker}
               >
                 <Picker.Item label="Select Goal" value={undefined} />
-                <Picker.Item label="Lose Weight" value="weight_loss" />
-                <Picker.Item label="Gain Muscle" value="muscle_gain" />
-                <Picker.Item label="Maintenance" value="maintenance" />
+                <Picker.Item label={userGoalToText(Goal.WEIGHT_LOSS)} value={Goal.WEIGHT_LOSS} />
+                <Picker.Item label={userGoalToText(Goal.MUSCLE_GAIN)} value={Goal.MUSCLE_GAIN} />
+                <Picker.Item label={userGoalToText(Goal.MAINTENANCE)} value={Goal.MAINTENANCE} />
               </Picker>
             </View>
           </LinearGradient>

@@ -6,10 +6,11 @@ import { useUser } from '../context/UserContext';
 import { signOut } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, firestore } from '../firebase/firebase';
-import { User } from '../models/User';
+import { ActivityLevel, Goal, User } from '../models/User';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { userActivityLevelToText, userGoalToText } from '@/models/functions';
 
 const Profile: React.FC = () => {
   const { user, setUser } = useUser();
@@ -124,6 +125,7 @@ const Profile: React.FC = () => {
       setLocalUser(updatedUser);
       if (auth.currentUser) {
         setDoc(doc(firestore, 'users', auth.currentUser.uid), { [field]: value }, { merge: true });
+        setUser(updatedUser);
       }
     }
   };
@@ -138,7 +140,6 @@ const Profile: React.FC = () => {
       }
     }
   };
-
 
   const defaultImage = localUser?.gender === 'female'
     ? require('../assets/images/female-icon.png')
@@ -166,41 +167,41 @@ const Profile: React.FC = () => {
       <View style={styles.buttonGroup}>
         <TouchableOpacity
           style={styles.selectButton}
-          onPress={() => handleButtonSelect('goal', 'weight_loss')}
+          onPress={() => handleButtonSelect('goal', Goal.WEIGHT_LOSS)}
         >
           <LinearGradient
-            colors={localUser?.goal === 'weight_loss' ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
+            colors={localUser?.goal === Goal.WEIGHT_LOSS ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradientButton}
           >
-            <Text style={localUser?.goal === 'weight_loss' ? styles.selectedButtonText : styles.buttonText}>Lose Weight</Text>
+            <Text style={localUser?.goal === Goal.WEIGHT_LOSS ? styles.selectedButtonText : styles.buttonText}>{userGoalToText(Goal.WEIGHT_LOSS)}</Text>
           </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.selectButton}
-          onPress={() => handleButtonSelect('goal', 'muscle_gain')}
+          onPress={() => handleButtonSelect('goal', Goal.MUSCLE_GAIN)}
         >
           <LinearGradient
-            colors={localUser?.goal === 'muscle_gain' ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
+            colors={localUser?.goal === Goal.MUSCLE_GAIN ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradientButton}
           >
-            <Text style={localUser?.goal === 'muscle_gain' ? styles.selectedButtonText : styles.buttonText}>Gain Muscle</Text>
+            <Text style={localUser?.goal === Goal.MUSCLE_GAIN ? styles.selectedButtonText : styles.buttonText}>{userGoalToText(Goal.MUSCLE_GAIN)}</Text>
           </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.selectButton}
-          onPress={() => handleButtonSelect('goal', 'maintenance')}
+          onPress={() => handleButtonSelect('goal', Goal.MAINTENANCE)}
         >
           <LinearGradient
-            colors={localUser?.goal === 'maintenance' ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
+            colors={localUser?.goal === Goal.MAINTENANCE ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradientButton}
           >
-            <Text style={localUser?.goal === 'maintenance' ? styles.selectedButtonText : styles.buttonText}>Maintenance</Text>
+            <Text style={localUser?.goal === Goal.MAINTENANCE ? styles.selectedButtonText : styles.buttonText}>{userGoalToText(Goal.MAINTENANCE)}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -208,41 +209,41 @@ const Profile: React.FC = () => {
       <View style={styles.buttonGroup}>
         <TouchableOpacity
           style={styles.selectButton}
-          onPress={() => handleButtonSelect('activityLevel', 'low')}
+          onPress={() => handleButtonSelect('activityLevel', ActivityLevel.LOW)}
         >
           <LinearGradient
-            colors={localUser?.activityLevel === 'low' ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
+            colors={localUser?.activityLevel === ActivityLevel.LOW ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradientButton}
           >
-            <Text style={localUser?.activityLevel === 'low' ? styles.selectedButtonText : styles.buttonText}>Low</Text>
+            <Text style={localUser?.activityLevel === ActivityLevel.LOW ? styles.selectedButtonText : styles.buttonText}>{userActivityLevelToText(ActivityLevel.LOW)}</Text>
           </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.selectButton}
-          onPress={() => handleButtonSelect('activityLevel', 'medium')}
+          onPress={() => handleButtonSelect('activityLevel', ActivityLevel.MEDIUM)}
         >
           <LinearGradient
-            colors={localUser?.activityLevel === 'medium' ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
+            colors={localUser?.activityLevel === ActivityLevel.MEDIUM ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradientButton}
           >
-            <Text style={localUser?.activityLevel === 'medium' ? styles.selectedButtonText : styles.buttonText}>Medium</Text>
+            <Text style={localUser?.activityLevel === ActivityLevel.MEDIUM ? styles.selectedButtonText : styles.buttonText}>{userActivityLevelToText(ActivityLevel.MEDIUM)}</Text>
           </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.selectButton}
-          onPress={() => handleButtonSelect('activityLevel', 'high')}
+          onPress={() => handleButtonSelect('activityLevel', ActivityLevel.HIGH)}
         >
           <LinearGradient
-            colors={localUser?.activityLevel === 'high' ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
+            colors={localUser?.activityLevel === ActivityLevel.HIGH ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradientButton}
           >
-            <Text style={localUser?.activityLevel === 'high' ? styles.selectedButtonText : styles.buttonText}>High</Text>
+            <Text style={localUser?.activityLevel === ActivityLevel.HIGH ? styles.selectedButtonText : styles.buttonText}>{userActivityLevelToText(ActivityLevel.HIGH)}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -311,6 +312,7 @@ const Profile: React.FC = () => {
     </ScrollView>
   );
 };
+
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,

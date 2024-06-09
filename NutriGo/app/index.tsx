@@ -43,10 +43,11 @@ const App: React.FC = () => {
   const [calories, setCalories] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const animatedValue = new Animated.Value(0);
-  const scrollViewRef = useRef<ScrollView>(null); // Ref for ScrollView
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const screenHeight = Dimensions.get('window').height; // Get the screen height
+  const screenHeight = Dimensions.get('window').height;
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -80,17 +81,22 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (loading) {
-      // Scroll to the GIF position when loading is true
       scrollViewRef.current?.scrollTo({
-        y: screenHeight * 1, // Scroll 20% of the screen height
+        y: screenHeight * 1,
         animated: true,
       });
     }
   }, [loading, screenHeight]);
 
   const fetchRecipes = () => {
+    if (!query && healthLabels.length === 0 && dietLabels.length === 0 && !calories) {
+      alert('Please enter a search term or select a filter.');
+      return;
+    }
+
     setLoading(true);
     setRecipes(null);
+    setErrorMessage('');
 
     const params = new URLSearchParams();
     params.append('app_id', '900da95e');
@@ -126,13 +132,14 @@ const App: React.FC = () => {
         return response.json();
       })
       .then((data) => {
-        if (data.hits) {
+        if (data.hits.length > 0) {
           const filteredRecipes = data.hits
             .map((hit: any) => hit.recipe)
             .filter((recipe: Recipe) => !calories || recipe.calories <= parseFloat(calories));
           setRecipes(filteredRecipes);
         } else {
           setRecipes([]);
+          setErrorMessage('No such recipes found');
         }
         setLoading(false);
       })
@@ -182,7 +189,8 @@ const App: React.FC = () => {
               fetchRecipes={fetchRecipes}
             />
             {loading && <Image style={styles.splashImage} source={require('../assets/images/fruit.gif')} />}
-            {!loading && recipes && <RecipeList data={recipes} openModal={openModal} />}
+            {!loading && recipes && recipes.length > 0 && <RecipeList data={recipes} openModal={openModal} />}
+            {!loading && recipes && recipes.length === 0 && <Text style={styles.errorMessage}>{errorMessage}</Text>}
             {recipes && (
               <View style={styles.buttonRow}>
                 <Animated.View style={[styles.hideButton, animatedStyle]}>
@@ -202,13 +210,13 @@ const App: React.FC = () => {
 
 const styles = StyleSheet.create({
   splashImage: {
-    width: 300, // Increased width
-    height: 300, // Increased height
-    alignSelf: 'center', // Center the GIF horizontally
+    width: 300,
+    height: 300,
+    alignSelf: 'center',
   },
   scrollViewContent: {
     flexGrow: 1,
-    justifyContent: 'center', // Center the GIF vertically
+    justifyContent: 'center',
     paddingTop: 100,
   },
   container: {
@@ -263,6 +271,12 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 1,
     pointerEvents: 'none',
+  },
+  errorMessage: {
+    textAlign: 'center',
+    color: 'red',
+    marginTop: 20,
+    fontSize: 16,
   },
 });
 

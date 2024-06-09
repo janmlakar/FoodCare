@@ -53,8 +53,8 @@ const Layout = () => {
                 {pathname === '/calorie-tracker' && <PinkDot />}
               </NavButton>
               <NavButton onPress={() => router.push('/login')}>
-                <Ionicons name="person" size={24} color={pathname === '/profile' ? "pink" : "grey"} />
-                {pathname === '/profile' && <PinkDot />}
+                <Ionicons name="person" size={24} color={pathname === '/profile'||pathname === '/login' ? "pink" : "grey"} />
+                {pathname === '/profile'&& <PinkDot />||pathname === '/login' && <PinkDot />}
               </NavButton>
             </Navbar>
           </Container>

@@ -9,7 +9,7 @@ import { useUser } from '../context/UserContext';
 import { User } from '@/models/User';
 
 const LoginForm = () => {
-  const { setUser } = useUser();
+  const { user, setUser } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -56,7 +56,13 @@ const LoginForm = () => {
     }
   };
 
-
+  if(user) {
+    router.push('/profile');
+    return (
+      <>
+      </>
+    );
+  }
 
   return (
     <View style={styles.container}>
