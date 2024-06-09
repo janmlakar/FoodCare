@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, Modal, TouchableOpacity, Image, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons'; // Make sure you have installed @expo/vector-icons
 import useFonts from '../hooks/useFonts';
 import { useUser } from '../context/UserContext';
 import { Link } from 'expo-router';
@@ -169,6 +170,9 @@ const Plan: React.FC = () => {
           ) : (
             <Text style={styles.greeting}>Hey, you need to be logged in to see your plans!</Text>
           )}
+          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.infoIconContainer}>
+            <Ionicons name="information-circle-outline" size={25} color="#999" />
+          </TouchableOpacity>
         </LinearGradient>
         <LinearGradient
           colors={['#EEA4CE', '#C58BF2']}
@@ -233,7 +237,7 @@ const Plan: React.FC = () => {
         <View style={styles.waterIntakeContainer}>
           <Text style={styles.calorieTitle}>Daily Water Intake:</Text>
           <TextInput
-            placeholder="Vnesi količino vode v ml"
+            placeholder="Water intake in ml"
             keyboardType="numeric"
             value={currentWaterIntake}
             onChangeText={handleWaterIntakeChange}
@@ -259,30 +263,21 @@ const Plan: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
-       
+
         <Modal
           animationType="slide"
           transparent={true}
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
         >
-          <View style={styles.modalContainer}>
+         <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Micronutrients</Text>
-              {micros && (
-                <>
-                  <Text style={styles.macroTitle}>Vitamins</Text>
-                  {Object.entries(micros.vitamins).map(([key, value]) => (
-                    <Text style={styles.modalMacro} key={key}>{key}: {value}</Text>
-                  ))}
-                  <Text style={styles.macroTitle}>Minerals</Text>
-                  {Object.entries(micros.minerals).map(([key, value]) => (
-                    <Text style={styles.modalMacro} key={key}>{key}: {value}</Text>
-                  ))}
-                </>
-              )}
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text style={styles.link}>Close</Text>
+              <Text style={styles.modalTitle}>Info about data calculation</Text>
+              <Text style={styles.modalText}>
+                To calculate BMR (Basal Metabolic Rate), we used the Harris-Benedict Equation. All values used were based on the individual's biometric data, including height, weight, age, and gender. The Harris-Benedict Equation is one of the most recognized methods for calculating BMR and provides accurate estimates based on the specific characteristics of the individual.
+              </Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -308,6 +303,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 20,
     marginTop: 50,
+    position: 'relative',
   },
   greeting: {
     fontSize: 24,
@@ -485,6 +481,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     fontFamily: 'SpaceMono-Regular',
+  },
+  modalText: {
+    fontSize: 16,
+    color: '#333',
+    fontFamily: 'SpaceMono-Regular',
+    marginTop: 5,
+    textAlign: 'center',
+  },
+  closeButton: {
+    marginTop: 20,
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: '#0000FF',
+    fontFamily: 'SpaceMono-Regular',
+  },
+  infoIconContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
 });
 

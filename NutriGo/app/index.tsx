@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Text, TouchableOpacity, View, ScrollView, SafeAreaView, StyleSheet, Animated, Image, Dimensions } from 'react-native';
-import * as Font from 'expo-font';
-import AppLoading from 'expo-app-loading';
+import { Text, TouchableOpacity, View, ScrollView, SafeAreaView, StyleSheet, Animated, Image, Dimensions, ActivityIndicator } from 'react-native';
+import { useFonts } from 'expo-font';
 import ErrorBoundary from 'react-native-error-boundary';
 import SearchForm from '../components/SearchForm';
 import RecipeList from '../components/RecipeList';
@@ -27,14 +26,11 @@ interface Recipe {
   ingredientLines: string[];
 }
 
-const fetchFonts = () => {
-  return Font.loadAsync({
+const App: React.FC = () => {
+  const [fontsLoaded] = useFonts({
     'SpaceMono-Regular': require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
-};
 
-const App: React.FC = () => {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
   const [query, setQuery] = useState('');
   const [recipes, setRecipes] = useState<Recipe[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,22 +40,13 @@ const App: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
-  const animatedValue = new Animated.Value(0);
+  const animatedValue = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
 
   const screenHeight = Dimensions.get('window').height;
 
   useEffect(() => {
-    const loadFonts = async () => {
-      await fetchFonts();
-      setFontsLoaded(true);
-    };
-
-    loadFonts();
-  }, []);
-
-  useEffect(() => {
-    const startAnimation = () => {
+    if (fontsLoaded) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(animatedValue, {
@@ -74,10 +61,8 @@ const App: React.FC = () => {
           }),
         ])
       ).start();
-    };
-
-    startAnimation();
-  }, [animatedValue]);
+    }
+  }, [fontsLoaded, animatedValue]);
 
   useEffect(() => {
     if (loading) {
@@ -167,11 +152,15 @@ const App: React.FC = () => {
   };
 
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.container}>
         <View style={styles.glitterWrapper} pointerEvents="none"></View>
         <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollViewContent}>
@@ -228,6 +217,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingBottom: 20,
+    backgroundColor: '#fff', // Ensure background is white
   },
   title: {
     fontSize: 24,
@@ -257,6 +247,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 22,
   },
+
   hideButtonText: {
     color: '#fff',
     fontWeight: 'bold',
@@ -277,6 +268,12 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 20,
     fontSize: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff', // Ensure background is white
   },
 });
 

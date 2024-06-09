@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { auth, firestore } from '../firebase/firebase';
@@ -16,6 +16,12 @@ const LoginForm = () => {
   const [success, setSuccess] = useState('');
   const router = useRouter();
 
+  useEffect(() => {
+    if (user) {
+      router.push('/profile');
+    }
+  }, [user, router]);
+
   const handleLogin = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -32,7 +38,6 @@ const LoginForm = () => {
           email: user.email || '',
           ...userData,
         });
-        router.push('/profile');
       } else {
         setError('No user data available. Please contact support.');
         setSuccess('');
@@ -55,14 +60,6 @@ const LoginForm = () => {
       console.error('Error logging in:', error);
     }
   };
-
-  if(user) {
-    router.push('/profile');
-    return (
-      <>
-      </>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -127,13 +124,14 @@ const LoginForm = () => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f5f5f5', // Ensure this matches the splash screen background color
+    backgroundColor: '#f5f5f5',
   },
   title: {
     fontSize: 28,

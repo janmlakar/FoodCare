@@ -121,10 +121,10 @@ const Profile: React.FC = () => {
 
   const handleInputChange = (field: keyof User, value: string | number) => {
     if (localUser) {
-      const updatedUser = { ...localUser, [field]: value };
+      const updatedUser = { ...localUser, [field]: value !== '' && !isNaN(Number(value)) ? Number(value) : '' };
       setLocalUser(updatedUser);
       if (auth.currentUser) {
-        setDoc(doc(firestore, 'users', auth.currentUser.uid), { [field]: value }, { merge: true });
+        setDoc(doc(firestore, 'users', auth.currentUser.uid), { [field]: updatedUser[field] }, { merge: true });
         setUser(updatedUser);
       }
     }
@@ -260,7 +260,7 @@ const Profile: React.FC = () => {
               style={styles.input}
               placeholder="Height (cm)"
               value={localUser?.height?.toString() || ''}
-              onChangeText={(value) => handleInputChange('height', parseInt(value))}
+              onChangeText={(value) => handleInputChange('height', value)}
               keyboardType="numeric"
               placeholderTextColor="#999"
             />
@@ -280,7 +280,7 @@ const Profile: React.FC = () => {
               style={styles.input}
               placeholder="Weight (kg)"
               value={localUser?.weight?.toString() || ''}
-              onChangeText={(value) => handleInputChange('weight', parseInt(value))}
+              onChangeText={(value) => handleInputChange('weight', value)}
               keyboardType="numeric"
               placeholderTextColor="#999"
             />
