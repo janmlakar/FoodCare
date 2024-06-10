@@ -1,19 +1,15 @@
 import { AntDesign } from "@expo/vector-icons";
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { useMutation, gql } from '@apollo/client';
+import moment from 'moment'; // Import moment.js library for date manipulation
 
 const ADD_FOOD_TO_TRACKER = gql`
-  mutation AddFoodToTracker($foodId: ID!, $quantity: Float!) {
-    addFoodToTracker(foodId: $foodId, quantity: $quantity) {
+  mutation AddFoodToTracker($foodId: ID!, $date: String!, $quantity: Float!) {
+    addFoodToTracker(foodId: $foodId, date: $date, quantity: $quantity) {
       id
       foodId
-      food {
-        label
-        brand
-        nutrients {
-          ENERC_KCAL
-        }
-      }
+      date
+      quantity
     }
   }
 `;
@@ -23,9 +19,11 @@ const FoodItem = ({ item, onAddFood }: any ) => {
 
   const handleAddFood = async () => {
     try {
+      const date = moment().format('YYYY-MM-DD'); // Get the current date in the format 'YYYY-MM-DD'
       const { data } = await addFoodToTracker({
         variables: {
           foodId: item.food.foodId,
+          date,
           quantity: 1, // You can adjust the quantity as needed
         },
       });
