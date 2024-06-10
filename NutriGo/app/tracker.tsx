@@ -52,7 +52,6 @@ export default function Tracker() {
                                 <Text style={{ color: '#fff', textAlign: 'center' }}>ADD FOOD</Text>
                             </TouchableOpacity>
                         </Link>
-                        <Ionicons name='barcode-outline' size={24}></Ionicons>
                     </View>
                     <FlatList
                         data={foodItems}
