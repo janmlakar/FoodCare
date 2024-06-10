@@ -22,7 +22,7 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
     goal: undefined,
     name: '',
     gender: undefined,
-    calorieIntake: 0, // Add this line
+    calorieIntake: 0,
   });
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -185,9 +185,13 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
                 style={styles.picker}
               >
                 <Picker.Item label="Select Activity Level" value={undefined} />
-                <Picker.Item label={userActivityLevelToText(ActivityLevel.LOW)} value={ActivityLevel.LOW} />
-                <Picker.Item label={userActivityLevelToText(ActivityLevel.MEDIUM)} value={ActivityLevel.MEDIUM} />
-                <Picker.Item label={userActivityLevelToText(ActivityLevel.HIGH)} value={ActivityLevel.HIGH} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.BMR)} value={ActivityLevel.BMR} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.SEDENTARY)} value={ActivityLevel.SEDENTARY} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.LIGHT)} value={ActivityLevel.LIGHT} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.MODERATE)} value={ActivityLevel.MODERATE} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.ACTIVE)} value={ActivityLevel.ACTIVE} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.VERY_ACTIVE)} value={ActivityLevel.VERY_ACTIVE} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.EXTRA_ACTIVE)} value={ActivityLevel.EXTRA_ACTIVE} />
               </Picker>
             </View>
           </LinearGradient>
@@ -207,6 +211,8 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
                 <Picker.Item label={userGoalToText(Goal.WEIGHT_LOSS)} value={Goal.WEIGHT_LOSS} />
                 <Picker.Item label={userGoalToText(Goal.MUSCLE_GAIN)} value={Goal.MUSCLE_GAIN} />
                 <Picker.Item label={userGoalToText(Goal.MAINTENANCE)} value={Goal.MAINTENANCE} />
+                <Picker.Item label={userGoalToText(Goal.EXTREME_WEIGHT_LOSS)} value={Goal.EXTREME_WEIGHT_LOSS} />
+                <Picker.Item label={userGoalToText(Goal.MILD_WEIGHT_LOSS)} value={Goal.MILD_WEIGHT_LOSS} />
               </Picker>
             </View>
           </LinearGradient>
