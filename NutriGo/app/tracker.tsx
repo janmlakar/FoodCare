@@ -49,7 +49,7 @@ export default function Tracker() {
                 <Link href="/search" asChild>
                     <Button title="ADD FOOD" />
                 </Link>
-                <Ionicons name='camera' size={24}></Ionicons>
+                <Ionicons name='barcode-outline' size={24}></Ionicons>
                 </View>
                 <FlatList
                     data={foodItems}

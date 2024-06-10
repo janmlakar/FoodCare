@@ -7,7 +7,6 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import * as NavigationBar from 'expo-navigation-bar';
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import styled from 'styled-components/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { FoodProvider } from '@/components/FoodList';
 
 const client = new ApolloClient({
@@ -30,41 +29,41 @@ const Layout = () => {
 
   return (
     <ApolloProvider client={client}>
-      
+
       <UserProvider>
-      <FoodProvider>
-        <SafeAreaProvider>
-          <Container>
-            <Content>
-              <Slot />
-            </Content>
-            <Navbar paddingBottom={insets.bottom}>
-              <NavButton onPress={() => router.push('/plan')}>
-                <Ionicons name="checkbox-sharp" size={24} color={pathname === '/plan' ? "pink" : "grey"} />
-                {pathname === '/plan' && <PinkDot />}
-              </NavButton>
-              <NavButton onPress={() => router.push('/statistics')}>
-                <Ionicons name="stats-chart" size={24} color={pathname === '/statistics' ? "pink" : "grey"} />
-                {pathname === '/statistics' && <PinkDot />}
-              </NavButton>
-              <NavButton onPress={() => router.push('/')}>
-                <Ionicons name="search-sharp" size={24} color={pathname === '/' ? "pink" : "grey"} />
-                {pathname === '/' && <PinkDot />}
-              </NavButton>
-              <NavButton onPress={() => router.push('/tracker')}>
-                <Ionicons name="nutrition" size={24} color={pathname === '/tracker' ? "pink" : "grey"} />
-                {pathname === '/tracker' && <PinkDot />}
-              </NavButton>
-              <NavButton onPress={() => router.push('/login')}>
-                <Ionicons name="person" size={24} color={pathname === '/profile'||pathname === '/login' ? "pink" : "grey"} />
-                {pathname === '/profile'&& <PinkDot />||pathname === '/login' && <PinkDot />}
-              </NavButton>
-            </Navbar>
-          </Container>
-        </SafeAreaProvider>
+        <FoodProvider>
+          <SafeAreaProvider>
+            <Container>
+              <Content>
+                <Slot />
+              </Content>
+              <Navbar paddingBottom={insets.bottom}>
+                <NavButton onPress={() => router.push('/plan')}>
+                  <Ionicons name="checkbox-sharp" size={24} color={pathname === '/plan' ? "pink" : "grey"} />
+                  {pathname === '/plan' && <PinkDot />}
+                </NavButton>
+                <NavButton onPress={() => router.push('/statistics')}>
+                  <Ionicons name="stats-chart" size={24} color={pathname === '/statistics' ? "pink" : "grey"} />
+                  {pathname === '/statistics' && <PinkDot />}
+                </NavButton>
+                <NavButton onPress={() => router.push('/')}>
+                  <Ionicons name="search-sharp" size={24} color={pathname === '/' ? "pink" : "grey"} />
+                  {pathname === '/' && <PinkDot />}
+                </NavButton>
+                <NavButton onPress={() => router.push('/tracker')}>
+                  <Ionicons name="nutrition" size={24} color={pathname === '/tracker' ? "pink" : "grey"} />
+                  {pathname === '/tracker' && <PinkDot />}
+                </NavButton>
+                <NavButton onPress={() => router.push('/login')}>
+                  <Ionicons name="person" size={24} color={pathname === '/profile' || pathname === '/login' ? "pink" : "grey"} />
+                  {pathname === '/profile' && <PinkDot /> || pathname === '/login' && <PinkDot />}
+                </NavButton>
+              </Navbar>
+            </Container>
+          </SafeAreaProvider>
         </FoodProvider>
       </UserProvider>
-      
+
     </ApolloProvider>
   );
 };
@@ -114,7 +113,7 @@ const FloatingButtonContainer = styled.View<FloatingButtonProps>`
 const styles = StyleSheet.create({
   floatingButton: {
     width: 30,
-    height:30,
+    height: 30,
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
