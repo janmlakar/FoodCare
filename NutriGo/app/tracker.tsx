@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+// tracker.tsx
+import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, Button } from 'react-native';
 import { Link } from "expo-router";
-import { getAuth } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { firestore } from '../firebase/firebase';
+import { useFood } from '@/components/FoodList';
 import FoodItem from '../components/FoodItem';
-import { ActivityLevel, Goal } from '@/models/User';
 import { useUser } from '@/hooks/useUser';
 import { calculateCalorieIntake } from '@/models/functions';
 
@@ -22,14 +20,9 @@ const styles = StyleSheet.create({
     }
 });
 
-const foodItems = [
-    { food: { label: 'Jabolko', nutrients: { ENERC_KCAL: 100 }, brand: 'Podgrajšek' } },
-    { food: { label: 'Pica', nutrients: { ENERC_KCAL: 200 }, brand: 'Lovska Koča' } },
-    { food: { label: 'Pomfri', nutrients: { ENERC_KCAL: 300 }, brand: 'McDonalds' } },
-]
-
 export default function Tracker() {
     const { user } = useUser();
+    const { foodItems } = useFood();
 
     const dailyCalorieIntake = user ? calculateCalorieIntake(
         user.height,
@@ -41,22 +34,22 @@ export default function Tracker() {
       ) : 'Not set';
 
     return (
-            <SafeAreaView style={{ flex: 1 }}>
-                <View style={styles.container}>
-                    <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-                    <Text style={{ fontSize: 18, fontWeight: 600}}>Calories</Text>
-                    <Text style={{ fontSize: 18, fontWeight: 600}}>{dailyCalorieIntake} kcal</Text>
-                    </View>
-                    <Text style={{ fontSize: 18, fontWeight: 600}}>Today's Logged Food</Text>
-                    <Link href="/search" asChild>
-                        <Button title="ADD FOOD" />
-                    </Link>
-                    <FlatList
-                        data={foodItems}
-                        renderItem={({ item }) => <FoodItem item={item} />}
-                        contentContainerStyle={{ gap: 5 }}
-                    />
+        <SafeAreaView style={{ flex: 1 }}>
+            <View style={styles.container}>
+                <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                <Text style={{ fontSize: 18, fontWeight: 600}}>Calories</Text>
+                <Text style={{ fontSize: 18, fontWeight: 600}}>{dailyCalorieIntake} kcal - USED = REMAINING</Text>
                 </View>
-            </SafeAreaView>
+                <Text style={{ fontSize: 18, fontWeight: 600}}>Today's Logged Food</Text>
+                <Link href="/search" asChild>
+                    <Button title="ADD FOOD" />
+                </Link>
+                <FlatList
+                    data={foodItems}
+                    renderItem={({ item }) => <FoodItem item={item} />}
+                    contentContainerStyle={{ gap: 5 }}
+                />
+            </View>
+        </SafeAreaView>
     )
 }
