@@ -29,8 +29,6 @@ const FoodItem = ({ item, onAddFood }: { item: any, onAddFood: () => void }) => 
   );
 };
 
-
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'gainsboro',

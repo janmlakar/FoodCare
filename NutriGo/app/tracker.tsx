@@ -1,5 +1,6 @@
+// tracker.tsx
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList, Button, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity } from 'react-native';
 import { Link } from "expo-router";
 import { useFood } from '@/components/FoodList';
 import FoodItem from '../components/FoodItem';
@@ -22,13 +23,13 @@ const styles = StyleSheet.create({
 
 export default function Tracker() {
     const { user } = useUser();
-    const { foodItems, addFoodItem } = useFood(); // Destructure addFoodItem here
+    const { foodItems, addFoodItem } = useFood();
 
     const dailyCalorieIntake = user && calculateCalorieIntake(
         user.height,
         user.weight,
         user.age,
-        user.gender || 'other',  // Default to 'other' if gender is undefined
+        user.gender || 'other',  
         user.activityLevel,
         user.goal
     );
