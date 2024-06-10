@@ -94,3 +94,15 @@ type Query {
       configuration: "edamam"
     )
 }
+
+type Tracker {
+  id: ID!
+  userId: ID!
+  foodId: ID!
+  date: String!
+  quantity: Float!
+}
+
+type Mutation {
+  addFoodToTracker(foodId: ID!, date: String!, quantity: Float!): Tracker
+}

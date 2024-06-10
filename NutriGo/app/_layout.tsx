@@ -8,6 +8,7 @@ import * as NavigationBar from 'expo-navigation-bar';
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import styled from 'styled-components/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FoodProvider } from '@/components/FoodList';
 
 const client = new ApolloClient({
   uri: 'https://melokovka.eu-central-a.ibm.stepzen.net/api/impressive-turkey/__graphql',
@@ -29,7 +30,9 @@ const Layout = () => {
 
   return (
     <ApolloProvider client={client}>
+      
       <UserProvider>
+      <FoodProvider>
         <SafeAreaProvider>
           <Container>
             <Content>
@@ -59,7 +62,9 @@ const Layout = () => {
             </Navbar>
           </Container>
         </SafeAreaProvider>
+        </FoodProvider>
       </UserProvider>
+      
     </ApolloProvider>
   );
 };

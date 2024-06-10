@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, Button } from 'react-native';
 import { Link } from "expo-router";
-import { getAuth } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { firestore } from '../firebase/firebase';
+import { useFood } from '@/components/FoodList';
 import FoodItem from '../components/FoodItem';
-import { ActivityLevel, Goal } from '@/models/User';
 import { useUser } from '@/hooks/useUser';
 import { calculateCalorieIntake } from '@/models/functions';
+import { Ionicons } from '@expo/vector-icons';
 
 const styles = StyleSheet.create({
     container: {
@@ -22,41 +20,49 @@ const styles = StyleSheet.create({
     }
 });
 
-const foodItems = [
-    { food: { label: 'Jabolko', nutrients: { ENERC_KCAL: 100 }, brand: 'Podgrajšek' } },
-    { food: { label: 'Pica', nutrients: { ENERC_KCAL: 200 }, brand: 'Lovska Koča' } },
-    { food: { label: 'Pomfri', nutrients: { ENERC_KCAL: 300 }, brand: 'McDonalds' } },
-]
-
 export default function Tracker() {
     const { user } = useUser();
+    const { foodItems, addFoodItem } = useFood(); // Destructure addFoodItem here
 
-    const dailyCalorieIntake = user ? calculateCalorieIntake(
+    const dailyCalorieIntake = user && calculateCalorieIntake(
         user.height,
         user.weight,
         user.age,
         user.gender || 'other',  // Default to 'other' if gender is undefined
         user.activityLevel,
         user.goal
-      ) : 'Not set';
+    );
+
+    const totalCaloriesConsumed = foodItems.reduce((sum, item) => sum + item.nutrients.ENERC_KCAL, 0);
+    const remainingCalories = typeof dailyCalorieIntake === 'number'? dailyCalorieIntake - totalCaloriesConsumed : 0;
+
 
     return (
-            <SafeAreaView style={{ flex: 1 }}>
-                <View style={styles.container}>
-                    <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-                    <Text style={{ fontSize: 18, fontWeight: 600}}>Calories</Text>
-                    <Text style={{ fontSize: 18, fontWeight: 600}}>{dailyCalorieIntake} kcal</Text>
-                    </View>
-                    <Text style={{ fontSize: 18, fontWeight: 600}}>Today's Logged Food</Text>
-                    <Link href="/search" asChild>
-                        <Button title="ADD FOOD" />
-                    </Link>
-                    <FlatList
-                        data={foodItems}
-                        renderItem={({ item }) => <FoodItem item={item} />}
-                        contentContainerStyle={{ gap: 5 }}
-                    />
+        <SafeAreaView style={{ flex: 1 }}>
+            <View style={styles.container}>
+                <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 18, fontWeight: '600' }}>Calories</Text>
+                    <Text style={{ fontSize: 18, fontWeight: '600' }}>{dailyCalorieIntake} cal - {totalCaloriesConsumed} cal = {remainingCalories} cal</Text>
                 </View>
-            </SafeAreaView>
-    )
+                <Text style={{ fontSize: 18, fontWeight: '600' }}>Today's Logged Food</Text>
+                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20}}>
+                <Link href="/search" asChild>
+                    <Button title="ADD FOOD" />
+                </Link>
+                <Ionicons name='camera' size={24}></Ionicons>
+                </View>
+                <FlatList
+                    data={foodItems}
+                    renderItem={({ item }) => (
+                        <FoodItem
+                            item={item}
+                            onAddFood={() => addFoodItem(item)}
+                        />
+                    )}
+                    contentContainerStyle={{ gap: 5 }}
+                />
+
+            </View>
+        </SafeAreaView>
+    );
 }
