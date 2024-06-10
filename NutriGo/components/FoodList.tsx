@@ -1,9 +1,18 @@
-// FoodContext.tsx
+// FoodList.tsx
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
+interface FoodItem {
+    foodId: string;
+    label: string;
+    nutrients: {
+        ENERC_KCAL: number;
+    };
+    brand?: string;
+}
+
 interface FoodContextProps {
-    foodItems: string[];
-    addFoodItem: (item: string) => void;
+    foodItems: FoodItem[];
+    addFoodItem: (item: FoodItem) => void;
 }
 
 const FoodList = createContext<FoodContextProps | undefined>(undefined);
@@ -13,9 +22,9 @@ interface FoodProviderProps {
 }
 
 export const FoodProvider: React.FC<FoodProviderProps> = ({ children }) => {
-    const [foodItems, setFoodItems] = useState<string[]>([]);
+    const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
 
-    const addFoodItem = (item: string) => {
+    const addFoodItem = (item: FoodItem) => {
         setFoodItems((prevItems) => [...prevItems, item]);
     };
 
