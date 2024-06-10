@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
 
 export default function Tracker() {
     const { user } = useUser();
-    const { foodItems, addFoodItem } = useFood();
+    const { foodItems, addFoodItem, removeFoodItem } = useFood();
 
     const dailyCalorieIntake = user && calculateCalorieIntake(
         user.height,
@@ -59,7 +59,8 @@ export default function Tracker() {
                         renderItem={({ item }) => (
                             <FoodItem
                                 item={item}
-                                onAddFood={() => addFoodItem(item)}
+                                isAdded={true}
+                                onRemoveFood={() => removeFoodItem(item.id!)}
                             />
                         )}
                         contentContainerStyle={{ gap: 5 }}
