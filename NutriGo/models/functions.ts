@@ -1,99 +1,125 @@
 import { ActivityLevel, Goal } from "./User";
 
 export function userGoalToText(goal: Goal | undefined | null) {
-    if(!goal)
-        return undefined;
+    if (!goal) return undefined;
 
-    if(goal === Goal.WEIGHT_LOSS)
-        return "Lose weight";
-
-    if(goal === Goal.MUSCLE_GAIN)
-        return "Gain muscle";
-
-    if(goal === Goal.MAINTENANCE)
-        return "Maintenance";
-
-    return "Invalid value"
+    switch (goal) {
+        case Goal.WEIGHT_LOSS:
+            return "Lose weight";
+        case Goal.MILD_WEIGHT_LOSS:
+            return "Mild weight loss";
+        case Goal.EXTREME_WEIGHT_LOSS:
+            return "Extreme weight loss";
+        case Goal.MUSCLE_GAIN:
+            return "Gain muscle";
+        case Goal.MAINTENANCE:
+            return "Maintenance";
+        default:
+            return "Invalid value";
+    }
 }
 
 export function userActivityLevelToText(activityLevel: ActivityLevel | undefined | null) {
-    if(!activityLevel)
-        return undefined;
+    if (!activityLevel) return undefined;
 
-    if(activityLevel === ActivityLevel.LOW)
-        return "Low";
-
-    if(activityLevel === ActivityLevel.MEDIUM)
-        return "Medium";
-
-    if(activityLevel === ActivityLevel.HIGH)
-        return "High";
-
-    return "Invalid value"
+    switch (activityLevel) {
+        case ActivityLevel.BMR:
+            return "Basal Metabolic Rate (BMR)";
+        case ActivityLevel.SEDENTARY:
+            return "Sedentary: little or no exercise";
+        case ActivityLevel.LIGHT:
+            return "Light: exercise 1-3 times/week";
+        case ActivityLevel.MODERATE:
+            return "Moderate: exercise 4-5 times/week";
+        case ActivityLevel.ACTIVE:
+            return "Active/intense exercise 3-4 times/week";
+        case ActivityLevel.VERY_ACTIVE:
+            return "Very Active: intense exercise 6-7 times/week";
+        case ActivityLevel.EXTRA_ACTIVE:
+            return "Extra Active: very intense exercise daily";
+        default:
+            return "Invalid value";
+    }
 }
 
 const calculateCalorieIntake = (
-  height: number,
-  weight: number,
-  age: number,
-  gender: 'male' | 'female' | 'other' | undefined,
-  activityLevel: ActivityLevel | undefined,
-  goal: Goal | undefined
+    height: number,
+    weight: number,
+    age: number,
+    gender: 'male' | 'female' | 'other' | undefined,
+    activityLevel: ActivityLevel | undefined,
+    goal: Goal | undefined
 ): number | undefined => {
-  // Ensure gender is not undefined
-  if (!gender) return undefined;
+    // Ensure gender is not undefined
+    if (!gender) return undefined;
 
-  // Calculate BMR using the Harris-Benedict Equation
-  let BMR;
-  if (gender === 'male') {
-    BMR = 88.362 + 13.397 * weight + 4.799 * height - 5.677 * age;
-  } else if (gender === 'female') {
-    BMR = 447.593 + 9.247 * weight + 3.098 * height - 4.33 * age;
-  } else {
-    // Handle 'other' gender by averaging male and female BMR
-    BMR =
-      (88.362 + 13.397 * weight + 4.799 * height - 5.677 * age +
-        447.593 + 9.247 * weight + 3.098 * height - 4.33 * age) /
-      2;
-  }
+    // Calculate BMR using the Harris-Benedict Equation
+    let BMR;
+    if (gender === 'male') {
+        BMR = 88.362 + 13.397 * weight + 4.799 * height - 5.677 * age;
+    } else if (gender === 'female') {
+        BMR = 447.593 + 9.247 * weight + 3.098 * height - 4.33 * age;
+    } else {
+        // Handle 'other' gender by averaging male and female BMR
+        BMR = (88.362 + 13.397 * weight + 4.799 * height - 5.677 * age + 447.593 + 9.247 * weight + 3.098 * height - 4.33 * age) / 2;
+    }
 
-  // Adjust BMR based on activity level
-  let activityMultiplier = 1.2; // Default to sedentary if undefined
-  switch (activityLevel) {
-    case ActivityLevel.LOW:
-      activityMultiplier = 1.2;
-      break;
-    case ActivityLevel.MEDIUM:
-      activityMultiplier = 1.55;
-      break;
-    case ActivityLevel.HIGH:
-      activityMultiplier = 1.9;
-      break;
-    default:
-      activityMultiplier = 1.2;
-  }
+    // Adjust BMR based on activity level
+    let activityMultiplier = 1.2; // Default to sedentary if undefined
+    switch (activityLevel) {
+        case ActivityLevel.BMR:
+            activityMultiplier = 1.0;
+            break;
+        case ActivityLevel.SEDENTARY:
+            activityMultiplier = 1.2;
+            break;
+        case ActivityLevel.LIGHT:
+            activityMultiplier = 1.375;
+            break;
+        case ActivityLevel.MODERATE:
+            activityMultiplier = 1.465;
+            break;
+        case ActivityLevel.ACTIVE:
+            activityMultiplier = 1.55;
+            break;
+        case ActivityLevel.VERY_ACTIVE:
+            activityMultiplier = 1.725;
+            break;
+        case ActivityLevel.EXTRA_ACTIVE:
+            activityMultiplier = 1.9;
+            break;
+        default:
+            activityMultiplier = 1.2;
+    }
 
-  const maintenanceCalories = BMR * activityMultiplier;
+    const maintenanceCalories = BMR * activityMultiplier;
 
-  // Adjust maintenance calories based on goal
-  let goalAdjustment = 0; // Default to maintenance if undefined
-  switch (goal) {
-    case Goal.WEIGHT_LOSS:
-      goalAdjustment = -500;
-      break;
-    case Goal.MUSCLE_GAIN:
-      goalAdjustment = 500;
-      break;
-    case Goal.MAINTENANCE:
-      goalAdjustment = 0;
-      break;
-    default:
-      goalAdjustment = 0;
-  }
+    // Adjust maintenance calories based on goal
+    let goalAdjustment = 0; // Default to maintenance if undefined
+    switch (goal) {
+        case Goal.WEIGHT_LOSS:
+            goalAdjustment = -500;
+            break;
+        case Goal.MILD_WEIGHT_LOSS:
+            goalAdjustment = -250;
+            break;
+        case Goal.EXTREME_WEIGHT_LOSS:
+            goalAdjustment = -1000;
+            break;
+        case Goal.MUSCLE_GAIN:
+            goalAdjustment = 500;
+            break;
+        case Goal.MAINTENANCE:
+            goalAdjustment = 0;
+            break;
+        default:
+            goalAdjustment = 0;
+    }
 
-  const dailyCalorieIntake = maintenanceCalories + goalAdjustment;
-  return Math.round(dailyCalorieIntake);
+    const dailyCalorieIntake = maintenanceCalories + goalAdjustment;
+    return Math.round(dailyCalorieIntake);
 };
+
 
 const calculateMacrosIntake = (
   height: number,

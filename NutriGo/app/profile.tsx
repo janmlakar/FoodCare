@@ -11,6 +11,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { userActivityLevelToText, userGoalToText } from '@/models/functions';
+import { Picker } from '@react-native-picker/picker';
 
 const Profile: React.FC = () => {
   const { user, setUser } = useUser();
@@ -119,20 +120,19 @@ const Profile: React.FC = () => {
     router.push('/login');
   };
 
-const handleInputChange = (field: keyof User, value: string | number) => {
-  if (localUser) {
-    // Preverite, ali je polje "name" in posodobite vrednost brez preverjanja na številko
-    const updatedUser = { ...localUser, [field]: field === 'name' ? value : value !== '' && !isNaN(Number(value)) ? Number(value) : '' };
-    setLocalUser(updatedUser);
-    if (auth.currentUser) {
-      setDoc(doc(firestore, 'users', auth.currentUser.uid), { [field]: updatedUser[field] }, { merge: true });
-      setUser(updatedUser);
+  const handleInputChange = (field: keyof User, value: string | number) => {
+    if (localUser) {
+      // Preverite, ali je polje "name" in posodobite vrednost brez preverjanja na številko
+      const updatedUser = { ...localUser, [field]: field === 'name' ? value : value !== '' && !isNaN(Number(value)) ? Number(value) : '' };
+      setLocalUser(updatedUser);
+      if (auth.currentUser) {
+        setDoc(doc(firestore, 'users', auth.currentUser.uid), { [field]: updatedUser[field] }, { merge: true });
+        setUser(updatedUser);
+      }
     }
-  }
-};
+  };
 
-
-  const handleButtonSelect = async (field: keyof User, value: string) => {
+  const handlePickerChange = async (field: keyof User, value: string | number) => {
     if (localUser) {
       const updatedUser = { ...localUser, [field]: value };
       setLocalUser(updatedUser);
@@ -156,98 +156,77 @@ const handleInputChange = (field: keyof User, value: string | number) => {
           <MaterialIcons name="edit" size={24} color="black" />
         </TouchableOpacity>
       </View>
+     
       <Text style={styles.email}>{localUser?.email}</Text>
+      <Text style={styles.label1}>Edit your data:</Text>
       <Text style={styles.label}>Name</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Name"
-        value={localUser?.name || ''}
-        onChangeText={(value) => handleInputChange('name', value)}
-        placeholderTextColor="#999"
-      />
+      <View style={styles.inputContainer}>
+        <LinearGradient
+          colors={['#92a3fd', '#9dceff']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientBorder}
+        >
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="Name"
+              value={localUser?.name || ''}
+              onChangeText={(value) => handleInputChange('name', value)}
+              placeholderTextColor="#999"
+            />
+          </View>
+        </LinearGradient>
+      </View>
       <Text style={styles.label}>Goal</Text>
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity
-          style={styles.selectButton}
-          onPress={() => handleButtonSelect('goal', Goal.WEIGHT_LOSS)}
+      <View style={styles.inputContainer}>
+        <LinearGradient
+          colors={['#92a3fd', '#9dceff']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientBorder}
         >
-          <LinearGradient
-            colors={localUser?.goal === Goal.WEIGHT_LOSS ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientButton}
-          >
-            <Text style={localUser?.goal === Goal.WEIGHT_LOSS ? styles.selectedButtonText : styles.buttonText}>{userGoalToText(Goal.WEIGHT_LOSS)}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.selectButton}
-          onPress={() => handleButtonSelect('goal', Goal.MUSCLE_GAIN)}
-        >
-          <LinearGradient
-            colors={localUser?.goal === Goal.MUSCLE_GAIN ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientButton}
-          >
-            <Text style={localUser?.goal === Goal.MUSCLE_GAIN ? styles.selectedButtonText : styles.buttonText}>{userGoalToText(Goal.MUSCLE_GAIN)}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.selectButton}
-          onPress={() => handleButtonSelect('goal', Goal.MAINTENANCE)}
-        >
-          <LinearGradient
-            colors={localUser?.goal === Goal.MAINTENANCE ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientButton}
-          >
-            <Text style={localUser?.goal === Goal.MAINTENANCE ? styles.selectedButtonText : styles.buttonText}>{userGoalToText(Goal.MAINTENANCE)}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+          <View style={styles.pickerWrapper}>
+            <Picker
+              selectedValue={localUser?.goal}
+              onValueChange={(itemValue) => handlePickerChange('goal', itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Goal" value={undefined} />
+              <Picker.Item label={userGoalToText(Goal.WEIGHT_LOSS)} value={Goal.WEIGHT_LOSS} />
+              <Picker.Item label={userGoalToText(Goal.MILD_WEIGHT_LOSS)} value={Goal.MILD_WEIGHT_LOSS} />
+              <Picker.Item label={userGoalToText(Goal.EXTREME_WEIGHT_LOSS)} value={Goal.EXTREME_WEIGHT_LOSS} />
+              <Picker.Item label={userGoalToText(Goal.MUSCLE_GAIN)} value={Goal.MUSCLE_GAIN} />
+              <Picker.Item label={userGoalToText(Goal.MAINTENANCE)} value={Goal.MAINTENANCE} />
+            </Picker>
+          </View>
+        </LinearGradient>
       </View>
       <Text style={styles.label}>Activity Level</Text>
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity
-          style={styles.selectButton}
-          onPress={() => handleButtonSelect('activityLevel', ActivityLevel.LOW)}
+      <View style={styles.inputContainer}>
+        <LinearGradient
+          colors={['#92a3fd', '#9dceff']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientBorder}
         >
-          <LinearGradient
-            colors={localUser?.activityLevel === ActivityLevel.LOW ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientButton}
-          >
-            <Text style={localUser?.activityLevel === ActivityLevel.LOW ? styles.selectedButtonText : styles.buttonText}>{userActivityLevelToText(ActivityLevel.LOW)}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.selectButton}
-          onPress={() => handleButtonSelect('activityLevel', ActivityLevel.MEDIUM)}
-        >
-          <LinearGradient
-            colors={localUser?.activityLevel === ActivityLevel.MEDIUM ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientButton}
-          >
-            <Text style={localUser?.activityLevel === ActivityLevel.MEDIUM ? styles.selectedButtonText : styles.buttonText}>{userActivityLevelToText(ActivityLevel.MEDIUM)}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.selectButton}
-          onPress={() => handleButtonSelect('activityLevel', ActivityLevel.HIGH)}
-        >
-          <LinearGradient
-            colors={localUser?.activityLevel === ActivityLevel.HIGH ? ['#C58BF2', '#EEA4CE'] : ['#ccc', '#ccc']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientButton}
-          >
-            <Text style={localUser?.activityLevel === ActivityLevel.HIGH ? styles.selectedButtonText : styles.buttonText}>{userActivityLevelToText(ActivityLevel.HIGH)}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+          <View style={styles.pickerWrapper}>
+            <Picker
+              selectedValue={localUser?.activityLevel}
+              onValueChange={(itemValue) => handlePickerChange('activityLevel', itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Activity Level" value={undefined} />
+              <Picker.Item label={userActivityLevelToText(ActivityLevel.BMR)} value={ActivityLevel.BMR} />
+              <Picker.Item label={userActivityLevelToText(ActivityLevel.SEDENTARY)} value={ActivityLevel.SEDENTARY} />
+              <Picker.Item label={userActivityLevelToText(ActivityLevel.LIGHT)} value={ActivityLevel.LIGHT} />
+              <Picker.Item label={userActivityLevelToText(ActivityLevel.MODERATE)} value={ActivityLevel.MODERATE} />
+              <Picker.Item label={userActivityLevelToText(ActivityLevel.ACTIVE)} value={ActivityLevel.ACTIVE} />
+              <Picker.Item label={userActivityLevelToText(ActivityLevel.VERY_ACTIVE)} value={ActivityLevel.VERY_ACTIVE} />
+              <Picker.Item label={userActivityLevelToText(ActivityLevel.EXTRA_ACTIVE)} value={ActivityLevel.EXTRA_ACTIVE} />
+            </Picker>
+          </View>
+        </LinearGradient>
       </View>
       <Text style={styles.label}>Height (cm)</Text>
       <View style={styles.inputContainer}>
@@ -288,6 +267,7 @@ const handleInputChange = (field: keyof User, value: string | number) => {
             />
           </View>
         </LinearGradient>
+        
       </View>
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <LinearGradient
@@ -310,8 +290,11 @@ const handleInputChange = (field: keyof User, value: string | number) => {
           />
         </Animated.View>
         <Text style={styles.logoutButtonText}>Logout</Text>
+        
       </TouchableOpacity>
+      <Text style={styles.label2}>Go to first page to see plans</Text>
     </ScrollView>
+    
   );
 };
 
@@ -331,6 +314,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 20,
+    fontFamily: 'SpaceMono-Regular',
+
   },
   imageContainer: {
     position: 'relative',
@@ -362,6 +347,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
+  label1: {
+    fontSize: 20,
+    color: '#000',
+    marginBottom: 20,
+    fontFamily: 'SpaceMono-Regular',
+  },
+  label2: {
+    fontSize: 15,
+    color: '#000',
+    marginBottom: 20,
+    fontFamily: 'SpaceMono-Regular',
+  },
   inputContainer: {
     width: '100%',
     marginVertical: 10,
@@ -388,37 +385,21 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     color: '#000',
   },
+  pickerWrapper: {
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    overflow: 'hidden',
+    width: '100%',
+    padding: 8,
+  },
+  picker: {
+    height: 40,
+    color: '#000',
+    flex: 1,
+  },
   shimmerOverlay: {
     ...StyleSheet.absoluteFillObject,
     opacity: 0.5,
-  },
-  buttonGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  selectButton: {
-    flex: 1,
-    marginHorizontal: 5,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  gradientButton: {
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignItems: 'center',
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  selectedButtonText: {
-    color: 'white',
-    fontSize: 13,
-    fontWeight: 'bold',
-  },
-  buttonText: {
-    color: 'black',
-    fontSize: 13,
-    fontWeight: 'bold',
   },
   logoutButton: {
     width: '60%',

@@ -6,6 +6,8 @@ import SearchForm from '../components/SearchForm';
 import RecipeList from '../components/RecipeList';
 import RecipeModal from '../components/RecipeModal';
 
+
+
 interface Recipe {
   label: string;
   image: string;
