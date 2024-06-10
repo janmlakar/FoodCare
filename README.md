@@ -1,4 +1,4 @@
-# FoodCare - Praktikum II
+# NutriGo - Praktikum II
 
 Funkcionalnosti mobilne aplikacije:
 - Registracija uporabnika z podrobnostmi kot so starost, višina, teža, aktivnost
