@@ -8,7 +8,8 @@ import { Link } from 'expo-router';
 import { userActivityLevelToText, userGoalToText, calculateDailyWaterIntakeAdvanced, calculateBMI } from '@/models/functions';
 import { calculateCalorieIntake, calculateMacrosIntake, calculateMicrosIntake } from '@/models/functions';
 import CircularProgress from 'react-native-circular-progress-indicator';
-import useWaterIntake from '../hooks/useWaterIntake'; // Import the custom hook
+import useWaterIntake from '../hooks/useWaterIntake';
+import BMIGauge from '../components/BMIGauge';
 
 const Plan: React.FC = () => {
   const { user } = useUser();
@@ -26,7 +27,7 @@ const Plan: React.FC = () => {
     if (user) {
       const totalIntake = calculateDailyWaterIntakeAdvanced(user.weight, user.age, user.gender || 'other', user.activityLevel);
       setTotalWaterIntake(totalIntake);
-      loadWaterIntakeHistory(); // Load water intake from storage
+      loadWaterIntakeHistory();
     }
   }, [user]);
 
@@ -44,9 +45,8 @@ const Plan: React.FC = () => {
     if (!isNaN(intakeValue)) {
       const newAccumulatedWaterIntake = accumulatedWaterIntake + intakeValue;
       saveWaterIntake(newAccumulatedWaterIntake);
-      setCurrentWaterIntake(''); // Clear input after adding
+      setCurrentWaterIntake('');
 
-      // Trigger shake animation
       Animated.sequence([
         Animated.timing(shakeAnimation, {
           toValue: 10,
@@ -70,7 +70,6 @@ const Plan: React.FC = () => {
         }),
       ]).start();
 
-      // Show GIF for 3 seconds
       setGifVisible(true);
       setTimeout(() => setGifVisible(false), 3000);
     }
@@ -88,7 +87,7 @@ const Plan: React.FC = () => {
     user.height,
     user.weight,
     user.age,
-    user.gender || 'other',  // Default to 'other' if gender is undefined
+    user.gender || 'other',
     user.activityLevel,
     user.goal
   ) : 'Not set';
@@ -142,7 +141,7 @@ const Plan: React.FC = () => {
             <Text style={styles.plan}>Activity Level: {userActivityLevelToText(user?.activityLevel)}</Text>
             <Text style={styles.plan}>Goal: {userGoalToText(user?.goal)}</Text>
             <Link href="/login" style={styles.link}>
-              <Text>Change plan here</Text> {/* Wrap string in Text component */}
+              <Text>Change plan here</Text>
             </Link>
           </View>
         </LinearGradient>
@@ -170,6 +169,8 @@ const Plan: React.FC = () => {
             </View>
           </LinearGradient>
         </View>
+        {/* Integrate BMIGauge component */}
+        <BMIGauge bmi={bmi as number} />
         <View style={styles.row}>
           {macros && (
             <View style={styles.whiteContainer}>
@@ -202,13 +203,13 @@ const Plan: React.FC = () => {
           />
           <CircularProgress
             value={waterPercentage}
-            radius={70} // Increased the radius to make it larger
+            radius={70}
             duration={2000}
             maxValue={100}
             title={'%'}
             titleColor={'#333'}
             titleStyle={{ fontWeight: 'bold' }}
-            activeStrokeColor={'#87CEFA'} // Change progress circle color to light blue
+            activeStrokeColor={'#87CEFA'}
           />
           <Text style={styles.totalWaterIntake}>{accumulatedWaterIntake}/{totalWaterIntake} ml</Text>
           <Text style={styles.addWaterText}>Click the bottle to add water</Text>
@@ -329,7 +330,7 @@ const styles = StyleSheet.create({
   },
   link: {
     fontSize: 14,
-    color: '#0000FF', // Change link color to blue
+    color: '#0000FF',
     fontFamily: 'SpaceMono-Regular',
     marginTop: 5,
   },
@@ -345,15 +346,15 @@ const styles = StyleSheet.create({
   },
   dailyCalorieContainer: {
     padding: 20,
-    flexDirection: 'column', // Change this to column to align items vertically
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    alignItems: 'center', // Center align horizontally
+    alignItems: 'center',
   },
   bmiContainer: {
     padding: 20,
-    flexDirection: 'column', // Change this to column to align items vertically
-    justifyContent: 'center', // Center align vertically
-    alignItems: 'center', // Center align horizontally
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   dailyMicrosContainer: {
     backgroundColor: '#E0E0E0',
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontFamily: 'SpaceMono-Regular',
     textAlign: 'right',
-    marginTop: 'auto', // Push the value to the bottom
+    marginTop: 'auto',
   },
   macrosContainer: {
     backgroundColor: '#fff',
