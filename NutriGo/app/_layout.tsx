@@ -49,7 +49,7 @@ const Layout = () => {
                 {pathname === '/' && <PinkDot />}
               </NavButton>
               <NavButton onPress={() => router.push('/tracker')}>
-                <Ionicons name="camera" size={24} color={pathname === '/tracker' ? "pink" : "grey"} />
+                <Ionicons name="nutrition" size={24} color={pathname === '/tracker' ? "pink" : "grey"} />
                 {pathname === '/tracker' && <PinkDot />}
               </NavButton>
               <NavButton onPress={() => router.push('/login')}>
