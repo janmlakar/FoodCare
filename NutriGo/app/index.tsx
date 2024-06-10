@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
-import { Text, TouchableOpacity, View, ScrollView, SafeAreaView, StyleSheet, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Text, TouchableOpacity, View, ScrollView, SafeAreaView, StyleSheet, Animated, Image, Dimensions, ActivityIndicator } from 'react-native';
+import { useFonts } from 'expo-font';
+import ErrorBoundary from 'react-native-error-boundary';
 import SearchForm from '../components/SearchForm';
 import RecipeList from '../components/RecipeList';
 import RecipeModal from '../components/RecipeModal';
-import ScreenTemplate from './ScreenTemplate';
-import GlitterEffect from '../components/GlitterEffect';
-import StatusBarBackground from '../components/StatusBarBackground';
-
 
 interface Recipe {
   label: string;
@@ -29,28 +27,72 @@ interface Recipe {
 }
 
 const App: React.FC = () => {
+  const [fontsLoaded] = useFonts({
+    'SpaceMono-Regular': require('../assets/fonts/SpaceMono-Regular.ttf'),
+  });
+
   const [query, setQuery] = useState('');
-  const [data, setData] = useState<Recipe[] | null>(null);
+  const [recipes, setRecipes] = useState<Recipe[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [healthLabels, setHealthLabels] = useState<string[]>([]);
   const [dietLabels, setDietLabels] = useState<string[]>([]);
   const [calories, setCalories] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-  const animatedValue = new Animated.Value(0);
+  const [errorMessage, setErrorMessage] = useState('');
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const screenHeight = Dimensions.get('window').height;
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(animatedValue, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animatedValue, {
+            toValue: 0,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [fontsLoaded, animatedValue]);
+
+  useEffect(() => {
+    if (loading) {
+      scrollViewRef.current?.scrollTo({
+        y: screenHeight * 1,
+        animated: true,
+      });
+    }
+  }, [loading, screenHeight]);
 
   const fetchRecipes = () => {
+    if (!query && healthLabels.length === 0 && dietLabels.length === 0 && !calories) {
+      alert('Please enter a search term or select a filter.');
+      return;
+    }
+
     setLoading(true);
+    setRecipes(null);
+    setErrorMessage('');
+
     const params = new URLSearchParams();
     params.append('app_id', '900da95e');
     params.append('app_key', '40698503668e0bb3897581f4766d77f9');
     params.append('q', query);
 
     if (healthLabels.length > 0) {
-      healthLabels.forEach(label => params.append('health', label));
+      healthLabels.forEach((label) => params.append('health', label));
     }
     if (dietLabels.length > 0) {
-      dietLabels.forEach(label => params.append('diet', label));
+      dietLabels.forEach((label) => params.append('diet', label));
     }
     if (calories) {
       params.append('calories', `0-${calories}`);
@@ -65,7 +107,7 @@ const App: React.FC = () => {
         'Content-Type': 'application/json',
       },
     })
-      .then(response => {
+      .then((response) => {
         if (!response.ok) {
           if (response.status === 403) {
             throw new Error('Food with that parameters not found, try other filters');
@@ -74,16 +116,19 @@ const App: React.FC = () => {
         }
         return response.json();
       })
-      .then(data => {
-        if (data.hits) {
-          const filteredRecipes = data.hits.map((hit: any) => hit.recipe).filter((recipe: Recipe) => !calories || recipe.calories <= parseFloat(calories));
-          setData(filteredRecipes);
+      .then((data) => {
+        if (data.hits.length > 0) {
+          const filteredRecipes = data.hits
+            .map((hit: any) => hit.recipe)
+            .filter((recipe: Recipe) => !calories || recipe.calories <= parseFloat(calories));
+          setRecipes(filteredRecipes);
         } else {
-          setData([]);
+          setRecipes([]);
+          setErrorMessage('No such recipes found');
         }
         setLoading(false);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error:', error);
         setLoading(false);
         alert(error.message);
@@ -99,29 +144,6 @@ const App: React.FC = () => {
     setModalVisible(false);
   };
 
-  const hide = () => {
-    setData(null);
-  };
-
-  const startAnimation = () => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(animatedValue, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(animatedValue, {
-          toValue: 0,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  };
-
-  startAnimation();
-
   const animatedStyle = {
     opacity: animatedValue.interpolate({
       inputRange: [0, 1],
@@ -129,107 +151,108 @@ const App: React.FC = () => {
     }),
   };
 
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
   return (
-    <ScreenTemplate>
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <View style={styles.glitterWrapper} pointerEvents="none">
-            <GlitterEffect />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={styles.container}>
+        <View style={styles.glitterWrapper} pointerEvents="none"></View>
+        <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.innerContainer}>
+            <Text style={styles.title}>Recipe Search</Text>
+            <SearchForm
+              query={query}
+              setQuery={setQuery}
+              healthLabels={healthLabels}
+              setHealthLabels={setHealthLabels}
+              dietLabels={dietLabels}
+              setDietLabels={setDietLabels}
+              calories={calories}
+              setCalories={setCalories}
+              fetchRecipes={fetchRecipes}
+            />
+            {loading && <Image style={styles.splashImage} source={require('../assets/images/fruit.gif')} />}
+            {!loading && recipes && recipes.length > 0 && <RecipeList data={recipes} openModal={openModal} />}
+            {!loading && recipes && recipes.length === 0 && <Text style={styles.errorMessage}>{errorMessage}</Text>}
+            {recipes && (
+              <View style={styles.buttonRow}>
+                <Animated.View style={[styles.hideButton, animatedStyle]}>
+                  <TouchableOpacity onPress={() => setRecipes(null)}>
+                    <Text style={styles.hideButtonText}>Hide</Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
+            )}
           </View>
-          <ScrollView contentContainerStyle={styles.scrollViewContent}>
-            <View style={styles.innerContainer}>
-              <Text style={styles.title}>Recipe Search</Text>
-              <SearchForm
-                query={query}
-                setQuery={setQuery}
-                healthLabels={healthLabels}
-                setHealthLabels={setHealthLabels}
-                dietLabels={dietLabels}
-                setDietLabels={setDietLabels}
-                calories={calories}
-                setCalories={setCalories}
-                fetchRecipes={fetchRecipes}
-              />
-              {loading && <Text>Loading...</Text>}
-              <RecipeList data={data} openModal={openModal} />
-              {data && (
-                <View style={styles.buttonRow}>
-                  <Animated.View style={[styles.hideButton, animatedStyle]}>
-                    <TouchableOpacity onPress={hide}>
-                      <Text style={styles.hideButtonText}>Hide</Text>
-                    </TouchableOpacity>
-                  </Animated.View>
-                </View>
-              )}
-            </View>
-            <RecipeModal visible={modalVisible} onClose={closeModal} recipe={selectedRecipe} />
-          </ScrollView>
-        </View>
-      </SafeAreaView>
-    </ScreenTemplate>
+          <RecipeModal visible={modalVisible} onClose={closeModal} recipe={selectedRecipe} />
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  splashImage: {
+    width: 300,
+    height: 300,
+    alignSelf: 'center',
+  },
   scrollViewContent: {
     flexGrow: 1,
+    justifyContent: 'center',
     paddingTop: 100,
   },
   container: {
     flex: 1,
     position: 'relative',
+    backgroundColor: '#fff',
   },
   innerContainer: {
     flex: 1,
     paddingHorizontal: 20,
     paddingBottom: 20,
+    backgroundColor: '#fff', // Ensure background is white
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
-    color: 'white',
+    color: '#000',
+    fontFamily: 'SpaceMono-Regular',
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
     marginVertical: 20,
-    flexWrap: 'wrap', // allows buttons to wrap to the next line if needed
+    flexWrap: 'wrap',
   },
   hideButton: {
-    backgroundColor: '#6200ee',
-    borderRadius: 25, // Make the button more oval
-    paddingVertical: 10,
-    paddingHorizontal: 24,
+    backgroundColor: '#ADA4A5',
+    borderRadius: 30,
+    paddingVertical: 5,
+    paddingHorizontal: 30,
     alignItems: 'center',
     marginVertical: 10,
-    elevation: 2, // Add elevation for Android
-    shadowColor: '#000', // Add shadow for iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    elevation: 2,
+    shadowColor: 'rgba(149, 173, 254, 0.3)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 22,
   },
+
   hideButtonText: {
-    color: 'white',
+    color: '#fff',
     fontWeight: 'bold',
-    fontSize: 14,
-    textAlign: 'center', // Ensure text is centered
-  },
-  showAllButton: {
-    backgroundColor: '#4b0082',
-    borderRadius: 25,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  showAllButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 20,
-    textAlign: 'center', // Ensure text is centered
+    fontSize: 16,
+    textAlign: 'center',
   },
   glitterWrapper: {
     position: 'absolute',
@@ -240,24 +263,24 @@ const styles = StyleSheet.create({
     zIndex: 1,
     pointerEvents: 'none',
   },
-  optionButton: {
-    backgroundColor: 'rgba(75, 0, 130, 0.4)',
-    borderColor: 'rgba(75, 0, 130, 0.6)',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    marginVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-  },
-  optionButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    flexWrap: 'wrap',
+  errorMessage: {
     textAlign: 'center',
+    color: 'red',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff', // Ensure background is white
   },
 });
 
-export default App;
+const AppWithErrorBoundary: React.FC = () => (
+  <ErrorBoundary onError={(error: Error) => console.error('Error caught by ErrorBoundary:', error)}>
+    <App />
+  </ErrorBoundary>
+);
+
+export default AppWithErrorBoundary;

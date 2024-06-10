@@ -1,40 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Text, StyleSheet, TouchableOpacity, Animated, Image } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { auth } from '../firebase/firebase';
+import { auth, firestore } from '../firebase/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useUser } from '../context/UserContext';
+import { User } from '@/models/User';
 
 const LoginForm = () => {
+  const { user, setUser } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showGif, setShowGif] = useState(true);
   const router = useRouter();
-  const shimmerAnimation = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnimation, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(shimmerAnimation, {
-          toValue: 0,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [shimmerAnimation]);
-
-  const shimmerTranslate = shimmerAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-300, 300],
-  });
+    if (user) {
+      router.push('/profile');
+    }
+  }, [user, router]);
 
   const handleLogin = async () => {
     try {
@@ -43,7 +29,21 @@ const LoginForm = () => {
       setSuccess('Login successful!');
       setError('');
       console.log('User logged in:', user);
-    } catch (error) {
+
+      const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data() as Omit<User, 'id' | 'email'>;
+        setUser({
+          id: user.uid,
+          email: user.email || '',
+          ...userData,
+        });
+      } else {
+        setError('No user data available. Please contact support.');
+        setSuccess('');
+        console.error('No user data available.');
+      }
+    } catch (error: unknown) {
       let errorMessage = 'Login failed. Please try again.';
       if (error instanceof Error && 'code' in error) {
         const firebaseError = error as { code: string };
@@ -61,155 +61,71 @@ const LoginForm = () => {
     }
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowGif(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (showGif) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Image source={require('../assets/images/fruit.gif')} style={styles.loadingImage} />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      <View style={styles.inputContainer}>
-        <LinearGradient
-          colors={['#8A2BE2', '#4B0082']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradientBorder}
-        >
-          <View style={styles.inputWrapper}>
-            <TextInput
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              style={styles.input}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              placeholderTextColor="#999"
-            />
-          </View>
-        </LinearGradient>
-        <Animated.View
-          style={[
-            styles.shimmerOverlay,
-            { transform: [{ translateX: shimmerTranslate }] },
-          ]}
-        >
-          <LinearGradient
-            colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
-            start={{ x: 0, y: 1 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
+      <LinearGradient
+        colors={['#92a3fd', '#9dceff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradientBorder}
+      >
+        <View style={styles.inputWrapper}>
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            placeholderTextColor="#999"
           />
-        </Animated.View>
-      </View>
-      <View style={styles.inputContainer}>
-        <LinearGradient
-          colors={['#8A2BE2', '#4B0082']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradientBorder}
-        >
-          <View style={styles.inputWrapper}>
-            <TextInput
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              style={styles.input}
-              placeholderTextColor="#999"
-            />
-          </View>
-        </LinearGradient>
-        <Animated.View
-          style={[
-            styles.shimmerOverlay,
-            { transform: [{ translateX: shimmerTranslate }] },
-          ]}
-        >
-          <LinearGradient
-            colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
-            start={{ x: 0, y: 1 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
+        </View>
+      </LinearGradient>
+      <LinearGradient
+        colors={['#92a3fd', '#9dceff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradientBorder}
+      >
+        <View style={styles.inputWrapper}>
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={styles.input}
+            placeholderTextColor="#999"
           />
-        </Animated.View>
-      </View>
+        </View>
+      </LinearGradient>
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <View style={styles.searchButton}>
-          <LinearGradient
-            colors={['#ff007f', '#ff80bf', '#ff007f']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <Animated.View
-            style={[
-              styles.shimmerOverlay,
-              { transform: [{ translateX: shimmerTranslate }] },
-            ]}
-          >
-            <LinearGradient
-              colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-          </Animated.View>
-          <Text style={styles.searchButtonText}>Login</Text>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push('/register')} style={styles.registerButton}>
-        <View style={styles.registerButtonContent}>
-          <LinearGradient
-            colors={['#6200ee', '#6200ee']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <Animated.View
-            style={[
-              styles.shimmerOverlay,
-              { transform: [{ translateX: shimmerTranslate }] },
-            ]}
-          >
-            <LinearGradient
-              colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-          </Animated.View>
-          <Text style={styles.registerButtonText}>Register</Text>
-        </View>
+        <LinearGradient
+          colors={['#92a3fd', '#9dceff']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {success ? <Text style={styles.success}>{success}</Text> : null}
+      <Text style={styles.registerText}>Do not have an account?</Text>
+      <TouchableOpacity onPress={() => router.push('/register')} style={styles.registerButton}>
+        <LinearGradient
+          colors={['#92a3fd', '#9dceff']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.registerButtonBackground}
+        >
+          <Text style={styles.registerButtonText}>Register</Text>
+        </LinearGradient>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
-  loadingImage: {
-    width: 300,
-    height: 300,
-  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -223,20 +139,11 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 20,
   },
-  inputContainer: {
-    width: '100%',
-    marginVertical: 10,
-    borderRadius: 25,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 25,
-    elevation: 10,
-  },
   gradientBorder: {
+    width: '100%',
     padding: 2,
     borderRadius: 25,
+    marginVertical: 10,
   },
   inputWrapper: {
     backgroundColor: '#fff',
@@ -244,62 +151,24 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   input: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    width: '100%',
+    padding: 12,
+    borderWidth: 0,
     borderRadius: 25,
     color: '#000',
   },
-  shimmerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.5,
-  },
   button: {
     width: '100%',
-    marginVertical: 10,
-    borderRadius: 25,
-    overflow: 'hidden',
-  },
-  searchButton: {
-    backgroundColor: '#ff007f',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
+    padding: 15,
     borderRadius: 25,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#ff007f',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  searchButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    position: 'relative',
-    zIndex: 1,
-  },
-  registerButton: {
-    width: '50%',
     marginVertical: 10,
-    borderRadius: 25,
     overflow: 'hidden',
   },
-  registerButtonContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  registerButtonText: {
-    color: 'white',
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
     fontWeight: 'bold',
-    fontSize: 16,
-    textAlign: 'center',
     position: 'relative',
     zIndex: 1,
   },
@@ -310,6 +179,29 @@ const styles = StyleSheet.create({
   success: {
     color: 'green',
     marginTop: 10,
+  },
+  registerText: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#333',
+  },
+  registerButton: {
+    marginTop: 10,
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
+  registerButtonBackground: {
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  registerButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 14,
   },
 });
 

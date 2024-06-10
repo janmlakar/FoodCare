@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { User } from '../models/User';
@@ -7,6 +7,7 @@ import { auth, firestore } from '../firebase/firebase';
 type UserContextType = {
   user: User | null;
   setUser: (user: User | null) => void;
+  loading: boolean; // Include loading in the context type
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -18,6 +19,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        console.log('Firebase user detected:', firebaseUser.uid);
         const userDoc = await getDoc(doc(firestore, 'users', firebaseUser.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data() as Omit<User, 'id' | 'email'>;
@@ -26,9 +28,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             email: firebaseUser.email || '',
             ...userData,
           });
+          console.log('User data set:', userData);
+        } else {
+          console.error('No user data found in Firestore for user:', firebaseUser.uid);
         }
       } else {
         setUser(null);
+        console.log('No firebase user detected');
       }
       setLoading(false);
     });
@@ -37,8 +43,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
-      {!loading && children}
+    <UserContext.Provider value={{ user, setUser, loading }}>
+      {children}
     </UserContext.Provider>
   );
 };

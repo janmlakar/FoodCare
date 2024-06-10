@@ -1,3 +1,15 @@
+export enum ActivityLevel {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high"
+}
+
+export enum Goal {
+  WEIGHT_LOSS = "weight_loss",
+  MUSCLE_GAIN = "muscle_gain",
+  MAINTENANCE = "maintenance"
+}
+
 export interface User {
   id: string;
   email: string;
@@ -6,8 +18,9 @@ export interface User {
   age: number;
   height: number;
   weight: number;
-  activityLevel: 'low' | 'medium' | 'high' | undefined; // Allow undefined
-  goal: 'weight_loss' | 'muscle_gain' | 'maintenance' | undefined; // Allow undefined
+  activityLevel: ActivityLevel | undefined; // Allow undefined
+  goal: Goal | undefined; // Allow undefined
   name: string;
-  gender: 'male' | 'female' | 'other';
-}
+  gender: 'male' | 'female' | 'other'| undefined;
+  calorieIntake: number;
+  }

@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Slot, useRouter } from 'expo-router';
-import { UserProvider } from '../context/UserContext';
+import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Slot, useRouter, usePathname } from 'expo-router';
+import { UserProvider, useUser } from '../context/UserContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import ScreenTemplate from './ScreenTemplate';
 import * as NavigationBar from 'expo-navigation-bar';
-import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
+import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import styled from 'styled-components/native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const client = new ApolloClient({
   uri: 'https://melokovka.eu-central-a.ibm.stepzen.net/api/impressive-turkey/__graphql',
@@ -20,76 +20,114 @@ const client = new ApolloClient({
 
 const Layout = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    NavigationBar.setBackgroundColorAsync('#1a001a'); // Match with the navbar background color
+    NavigationBar.setBackgroundColorAsync('#1a001a');
   }, []);
 
   return (
     <ApolloProvider client={client}>
       <UserProvider>
         <SafeAreaProvider>
-          <ScreenTemplate>
-            <LinearGradient
-              colors={[
-                'rgba(10,0,30,1)',
-                'rgba(20,0,40,1)',
-                'rgba(35,0,55,1)',
-                'rgba(50,0,70,1)',
-                'rgba(70,10,90,1)',
-                'rgba(90,20,110,1)',
-                'rgba(50,10,70,1)',  // Darker color towards the bottom
-                'rgba(30,5,50,1)'    // Darkest color at the bottom
-              ]}
-              locations={[0, 0.15, 0.35, 0.55, 0.75, 0.9, 0.95, 1]}
-              style={styles.gradientBackground}
-            >
-              <View style={styles.container}>
-                <View style={styles.content}>
-                  <Slot />
-                </View>
-                <View style={[styles.navbar, { paddingBottom: insets.bottom }]}>
-                  <TouchableOpacity onPress={() => router.push('/')}>
-                    <Ionicons name="book" size={24} color="white" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push('/tracker')}>
-                    <Ionicons name="nutrition" size={24} color="white" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push('/statistics')}>
-                    <Ionicons name="stats-chart" size={24} color="white" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push('/profile')}>
-                    <Ionicons name="person" size={24} color="white" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </LinearGradient>
-          </ScreenTemplate>
+          <Container>
+            <Content>
+              <Slot />
+            </Content>
+            <Navbar paddingBottom={insets.bottom}>
+              <NavButton onPress={() => router.push('/plan')}>
+                <Ionicons name="checkbox-sharp" size={24} color={pathname === '/plan' ? "pink" : "grey"} />
+                {pathname === '/plan' && <PinkDot />}
+              </NavButton>
+              <NavButton onPress={() => router.push('/statistics')}>
+                <Ionicons name="stats-chart" size={24} color={pathname === '/statistics' ? "pink" : "grey"} />
+                {pathname === '/statistics' && <PinkDot />}
+              </NavButton>
+              <NavButton onPress={() => router.push('/')}>
+                <Ionicons name="search-sharp" size={24} color={pathname === '/' ? "pink" : "grey"} />
+                {pathname === '/' && <PinkDot />}
+              </NavButton>
+              <NavButton onPress={() => router.push('/calorie-tracker')}>
+                <Ionicons name="camera" size={24} color={pathname === '/calorie-tracker' ? "pink" : "grey"} />
+                {pathname === '/calorie-tracker' && <PinkDot />}
+              </NavButton>
+              <NavButton onPress={() => router.push('/login')}>
+                <Ionicons name="person" size={24} color={pathname === '/profile'||pathname === '/login' ? "pink" : "grey"} />
+                {pathname === '/profile'&& <PinkDot />||pathname === '/login' && <PinkDot />}
+              </NavButton>
+            </Navbar>
+          </Container>
         </SafeAreaProvider>
       </UserProvider>
     </ApolloProvider>
   );
 };
 
+const Container = styled.View`
+  flex: 1;
+  justify-content: space-between;
+  background-color: rgba(30, 5, 50, 1);
+`;
+
+const Content = styled.View`
+  flex: 1;
+`;
+
+interface NavbarProps {
+  paddingBottom: number;
+}
+
+const Navbar = styled.View<NavbarProps>`
+  height: 60px;
+  flex-direction: row;
+  justify-content: space-around; /* Use space-around for equal spacing */
+  align-items: center;
+  background-color: white;
+  padding-bottom: ${(props) => props.paddingBottom}px;
+  padding-horizontal: 10px;
+`;
+
+const NavButton = styled(TouchableOpacity)`
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 10px;
+`;
+
+interface FloatingButtonProps {
+  paddingBottom: number;
+}
+
+const FloatingButtonContainer = styled.View<FloatingButtonProps>`
+  position: absolute;
+  bottom: ${(props) => props.paddingBottom + 10}px; /* Adjust as needed to position the button */
+  right: 190px; /* Adjust to move the button to the right */
+  z-index: 1;
+`;
+
 const styles = StyleSheet.create({
-  gradientBackground: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  navbar: {
-    height: 60,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  floatingButton: {
+    width: 30,
+    height:30,
+    borderRadius: 24,
     alignItems: 'center',
-    backgroundColor: 'rgba(30,5,50,1)', // Match with the darkest bottom color of the gradient
-  },
-  content: {
-    flex: 1,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
   },
 });
+
+const PinkDot = styled.View`
+  width: 8px; /* Adjust size as needed */
+  height: 8px; /* Adjust size as needed */
+  border-radius: 4px; /* Half of width and height to make it a circle */
+  background-color: pink;
+  position: absolute;
+  bottom: -4px; /* Adjust as needed to position the dot correctly */
+`;
 
 export default Layout;

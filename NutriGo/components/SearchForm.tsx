@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated, FlatList } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import importedStyles from '../css/recipes';
+import { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 
 interface SearchFormProps {
   query: string;
@@ -88,14 +88,18 @@ const SearchForm: React.FC<SearchFormProps> = ({
   const renderLabel = useCallback(({ item, setLabels, labels }: { item: string, setLabels: React.Dispatch<React.SetStateAction<string[]>>, labels: string[] }) => (
     <TouchableOpacity
       onPress={() => toggleLabel(item, setLabels)}
-      style={[
-        localStyles.labelButton,
-        labels.includes(item) && localStyles.selectedLabelButton
-      ]}
+      style={localStyles.labelButtonContainer}
     >
-      <Text style={localStyles.labelButtonText} numberOfLines={1} ellipsizeMode="tail">
-        {item}
-      </Text>
+      <LinearGradient
+        colors={labels.includes(item) ? ['#C58BF2', '#EEA4CE'] : ['lightgray', 'lightgray']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={localStyles.gradientBackground}
+      >
+        <Text style={labels.includes(item) ? localStyles.labelButtonTextSelected : localStyles.labelButtonText}>
+          {item}
+        </Text>
+      </LinearGradient>
     </TouchableOpacity>
   ), [toggleLabel]);
 
@@ -105,7 +109,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     <View>
       <View style={localStyles.inputContainer}>
         <LinearGradient
-          colors={['#8A2BE2', '#4B0082']}
+          colors={['#92a3fd', '#9dceff']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={localStyles.gradientBorder}
@@ -139,23 +143,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
         <Text style={localStyles.label}>Health Labels:</Text>
         <View style={localStyles.labels}>
           {healthOptions.map((label) => (
-            <TouchableOpacity
-              key={label}
-              style={[
-                localStyles.labelButton,
-                healthLabels.includes(label) && localStyles.selectedLabelButton,
-              ]}
-              onPress={() => toggleLabel(label, setHealthLabels)}
-            >
-              <Text
-                style={[
-                  localStyles.labelButtonText,
-                  healthLabels.includes(label) && localStyles.selectedLabelButton,
-                ]}
-              >
-                {label}
-              </Text>
-            </TouchableOpacity>
+            <MemoizedLabel key={label} item={label} setLabels={setHealthLabels} labels={healthLabels} />
           ))}
         </View>
       </View>
@@ -164,30 +152,14 @@ const SearchForm: React.FC<SearchFormProps> = ({
         <Text style={localStyles.label}>Diet Labels:</Text>
         <View style={localStyles.labels}>
           {dietOptions.map((label) => (
-            <TouchableOpacity
-              key={label}
-              style={[
-                localStyles.labelButton,
-                dietLabels.includes(label) && localStyles.selectedLabelButton,
-              ]}
-              onPress={() => toggleLabel(label, setDietLabels)}
-            >
-              <Text
-                style={[
-                  localStyles.labelButtonText,
-                  dietLabels.includes(label) && localStyles.selectedLabelButton,
-                ]}
-              >
-                {label}
-              </Text>
-            </TouchableOpacity>
+            <MemoizedLabel key={label} item={label} setLabels={setDietLabels} labels={dietLabels} />
           ))}
         </View>
       </View>
 
       <View style={localStyles.smallInputContainer}>
         <LinearGradient
-          colors={['#8A2BE2', '#4B0082']}
+          colors={['#92a3fd', '#9dceff']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={localStyles.gradientBorder}
@@ -225,7 +197,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
       >
         <View style={localStyles.searchButton}>
           <LinearGradient
-            colors={['#ff007f', '#ff80bf', '#ff007f']}
+            colors={['#92a3fd', '#9dceff']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFill}
@@ -249,6 +221,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     </View>
   );
 };
+
 
 const localStyles = StyleSheet.create({
   inputContainer: {
@@ -284,7 +257,7 @@ const localStyles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: '#fff', // Changed to white
     borderRadius: 25,
     flex: 1,
     overflow: 'hidden',
@@ -292,7 +265,7 @@ const localStyles = StyleSheet.create({
   smallInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: '#fff', // Changed to white
     borderRadius: 25,
     flex: 1,
     overflow: 'hidden',
@@ -300,11 +273,13 @@ const localStyles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#000',
-    color: '#fff',
-    paddingVertical: 4,
+    backgroundColor: '#fff', // Changed to white
+    borderColor: '#ccc',
+    borderWidth: 1,
+    paddingVertical: 10,
     paddingHorizontal: 15,
-    borderRadius: 20,
+    borderRadius: 25,
+    color: '#000', // Text color changed to black
   },
   shimmerOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -317,26 +292,31 @@ const localStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
-    color: 'white',
+    color: 'black', // Changed to black
   },
   labels: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  labelButton: {
-    paddingVertical: 5,
-    paddingHorizontal: 15, // Increase padding for more space
+  labelButtonContainer: {
+    marginHorizontal: 5,
+    marginVertical: 5,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    marginHorizontal: 5, // Add horizontal margin for space between buttons
-    marginVertical: 5, // Add vertical margin for space between buttons
-    maxWidth: '100%', // Ensure button does not exceed container width
+    overflow: 'hidden', // Ensure the gradient stays within the borders
   },
-  selectedLabelButton: {
-    backgroundColor: '#ff007f',
+  gradientBackground: {
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   labelButtonText: {
-    color: 'white',
+    color: 'black', // Changed to black
+    textAlign: 'center',
+  },
+  labelButtonTextSelected: {
+    color: 'white', // Text color for selected state
     textAlign: 'center',
   },
   searchButtonContainer: {
@@ -345,16 +325,16 @@ const localStyles = StyleSheet.create({
     overflow: 'hidden',
   },
   searchButton: {
-    backgroundColor: '#ff007f', // Bright pink background
-    paddingVertical: 10, // Reduced vertical padding
-    paddingHorizontal: 5, // Further reduced horizontal padding to make it narrower
-    borderRadius: 25,
+    backgroundColor: 'linear-gradient(274deg, #92a3fd 0%, #9dceff 124.45%)', // Gradient background
+    paddingVertical: 18,
+    paddingHorizontal: 60,
+    borderRadius: 99,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#ff007f',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
+    shadowColor: 'rgba(149, 173, 254, 0.3)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 22,
     elevation: 10,
   },
   searchButtonText: {
@@ -363,7 +343,6 @@ const localStyles = StyleSheet.create({
     position: 'relative',
     zIndex: 1,
   },
-  
 });
 
 export default SearchForm;
