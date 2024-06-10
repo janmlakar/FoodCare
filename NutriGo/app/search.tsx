@@ -71,22 +71,21 @@ export default function Search() {
         data={items}
         renderItem={({ item }) => (
           <FoodItem
-            item={item}
+            item={item.food}
             onAddFood={() => {
-              if (item && item.food && item.food.label) {
-                addFoodItem({
-                  foodId: item.food.foodId,
-                  label: item.food.label,
-                  nutrients: item.food.nutrients,
-                  brand: item.food.brand,
-                });
-              }
+              addFoodItem({
+                foodId: item.food.foodId,
+                label: item.food.label,
+                nutrients: item.food.nutrients,
+                brand: item.food.brand,
+              });
             }}
           />
         )}
         ListEmptyComponent={() => !loading && <Text>Search for food</Text>}
         contentContainerStyle={styles.flatListContent}
       />
+
     </View>
   );
 }

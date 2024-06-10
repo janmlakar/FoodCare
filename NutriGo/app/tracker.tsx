@@ -1,9 +1,8 @@
-// tracker.tsx
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, Button } from 'react-native';
 import { Link } from "expo-router";
 import { useFood } from '@/components/FoodList';
-import FoodItem from '../components/FoodItem'; // Make sure this import is correct
+import FoodItem from '../components/FoodItem';
 import { useUser } from '@/hooks/useUser';
 import { calculateCalorieIntake } from '@/models/functions';
 
@@ -22,7 +21,7 @@ const styles = StyleSheet.create({
 
 export default function Tracker() {
     const { user } = useUser();
-    const { foodItems, addFoodItem } = useFood(); // Make sure to destructure addFoodItem here
+    const { foodItems, addFoodItem } = useFood(); // Destructure addFoodItem here
 
     const dailyCalorieIntake = user ? calculateCalorieIntake(
         user.height,
@@ -49,11 +48,12 @@ export default function Tracker() {
                     renderItem={({ item }) => (
                         <FoodItem
                             item={item}
-                            onAddFood={() => console.log("Add food function")}
+                            onAddFood={() => addFoodItem(item)}
                         />
                     )}
                     contentContainerStyle={{ gap: 5 }}
                 />
+
             </View>
         </SafeAreaView>
     );

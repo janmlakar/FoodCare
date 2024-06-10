@@ -4,30 +4,32 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 const FoodItem = ({ item, onAddFood }: { item: any, onAddFood: () => void }) => {
   const handleAddFood = async () => {
-    try {
-      await onAddFood();
-      console.log('Food added to tracker');
-    } catch (error) {
-      console.error('Error adding food to tracker:', error);
-    }
+      try {
+          await onAddFood();
+          console.log('Food added to tracker');
+      } catch (error) {
+          console.error('Error adding food to tracker:', error);
+      }
   };
 
   return (
-    <View style={styles.container}>
-      {item && item.food && item.food.label && (
-        <>
-          <View style={styles.infoContainer}>
-            <Text>{item.food.label}</Text>
-            <Text>{item.food.nutrients.ENERC_KCAL} cal, {item.food.brand}</Text>
-          </View>
-          <TouchableOpacity onPress={handleAddFood}>
-            <AntDesign name="pluscircleo" size={24} />
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
+      <View style={styles.container}>
+          {item && item.label && (
+              <>
+                  <View style={styles.infoContainer}>
+                      <Text>{item.label}</Text>
+                      <Text>{item.nutrients.ENERC_KCAL} cal, {item.brand}</Text>
+                  </View>
+                  <TouchableOpacity onPress={handleAddFood}>
+                      <AntDesign name="pluscircleo" size={24} />
+                  </TouchableOpacity>
+              </>
+          )}
+      </View>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {

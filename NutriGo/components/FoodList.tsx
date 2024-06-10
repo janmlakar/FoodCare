@@ -25,8 +25,10 @@ export const FoodProvider: React.FC<FoodProviderProps> = ({ children }) => {
     const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
 
     const addFoodItem = (item: FoodItem) => {
+        console.log("Adding food item:", item);
         setFoodItems((prevItems) => [...prevItems, item]);
     };
+    
 
     return (
         <FoodList.Provider value={{ foodItems, addFoodItem }}>
