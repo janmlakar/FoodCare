@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList, Button } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, FlatList, Button, TouchableOpacity } from 'react-native';
 import { Link } from "expo-router";
 import { useFood } from '@/components/FoodList';
 import FoodItem from '../components/FoodItem';
@@ -37,7 +37,7 @@ export default function Tracker() {
     const remainingCalories = typeof dailyCalorieIntake === 'number' ? dailyCalorieIntake - totalCaloriesConsumed : 0;
 
     return (
-         <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container}>
             {user ? (
                 <View style={styles.container}>
                     <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -47,9 +47,9 @@ export default function Tracker() {
                     <Text style={{ fontSize: 18, fontWeight: '600' }}>Today's Logged Food</Text>
                     <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20 }}>
                         <Link href="/search" asChild>
-                            <View>
-                                <Button title="ADD FOOD" />
-                            </View>
+                            <TouchableOpacity style={{ padding: 10, backgroundColor: '#007BFF', borderRadius: 5 }}>
+                                <Text style={{ color: '#fff', textAlign: 'center' }}>ADD FOOD</Text>
+                            </TouchableOpacity>
                         </Link>
                         <Ionicons name='barcode-outline' size={24}></Ionicons>
                     </View>
@@ -69,6 +69,6 @@ export default function Tracker() {
                     <Text style={{ fontSize: 18, fontWeight: '600' }}>Login to see Food Log</Text>
                 </View>
             )}
-            </SafeAreaView>
+        </SafeAreaView>
     );
 }
