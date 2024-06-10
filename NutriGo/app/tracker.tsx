@@ -34,7 +34,7 @@ export default function Tracker() {
         user.goal
     );
 
-    const totalCaloriesConsumed = foodItems.reduce((sum, item) => sum + item.nutrients.ENERC_KCAL, 0);
+    const totalCaloriesConsumed = foodItems.reduce((sum, item) => sum + Math.round(item.nutrients.ENERC_KCAL), 0);
     const remainingCalories = typeof dailyCalorieIntake === 'number' ? dailyCalorieIntake - totalCaloriesConsumed : 0;
 
     return (
@@ -59,8 +59,8 @@ export default function Tracker() {
                         renderItem={({ item }) => (
                             <FoodItem
                                 item={item}
-                                isAdded={true}
-                                onRemoveFood={() => removeFoodItem(item.id!)}
+                                isAdded={true} // Indicate that the item is already added
+                                onRemoveFood={() => removeFoodItem(item.id!)} // Pass the remove function
                             />
                         )}
                         contentContainerStyle={{ gap: 5 }}

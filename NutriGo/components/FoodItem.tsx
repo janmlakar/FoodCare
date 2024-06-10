@@ -27,7 +27,7 @@ const FoodItem = ({ item, onAddFood, onRemoveFood, isAdded }: { item: any, onAdd
         <>
           <View style={styles.infoContainer}>
             <Text>{item.label}</Text>
-            <Text>{item.nutrients.ENERC_KCAL} cal, {item.brand}</Text>
+            <Text>{Math.round(item.nutrients.ENERC_KCAL)} cal, {item.brand}</Text>
           </View>
           {isAdded ? (
             <TouchableOpacity onPress={handleRemoveFood}>
