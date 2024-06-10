@@ -1,35 +1,76 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Dimensions, ScrollView, TextInput, Modal, TouchableOpacity } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import useWaterIntake from '../hooks/useWaterIntake'; // Import the custom hook
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Picker } from '@react-native-picker/picker';
+
+interface HistoryEntry {
+  date: string;
+  amount?: number;
+  note?: string;
+  weight?: number;
+}
 
 const Statistics: React.FC = () => {
-  const [history, setHistory] = useState<{ date: string; amount: number; }[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [note, setNote] = useState<string>('');
+  const [weight, setWeight] = useState<string>('');
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [editMode, setEditMode] = useState<boolean>(false);
+  const [yearModalVisible, setYearModalVisible] = useState<boolean>(false);
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  const { waterIntakeHistory, loadWaterIntakeHistory, setWaterIntakeHistory } = useWaterIntake();
 
   useEffect(() => {
-    const loadHistory = async () => {
-      try {
-        const history = await AsyncStorage.getItem('waterIntakeHistory');
-        if (history) {
-          setHistory(JSON.parse(history));
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    loadHistory();
+    loadWaterIntakeHistory();
   }, []);
 
+  const handleSave = async () => {
+    const newEntry: HistoryEntry = { date: selectedDate, note, weight: parseFloat(weight) };
+    const existingEntryIndex = waterIntakeHistory.findIndex(entry => entry.date === selectedDate);
+    let updatedHistory;
+    if (existingEntryIndex >= 0) {
+      updatedHistory = [...waterIntakeHistory];
+      updatedHistory[existingEntryIndex] = newEntry;
+    } else {
+      updatedHistory = [...waterIntakeHistory, newEntry];
+    }
+
+    setWaterIntakeHistory(updatedHistory);
+    setModalVisible(false);
+    setNote('');
+    setWeight('');
+    await AsyncStorage.setItem('waterIntakeHistory', JSON.stringify(updatedHistory)); // Save the updated history
+  };
+
+  const handleEdit = () => {
+    setEditMode(true);
+  };
+
+  const handleRemove = async () => {
+    const updatedHistory = waterIntakeHistory.filter(entry => entry.date !== selectedDate);
+    setWaterIntakeHistory(updatedHistory);
+    setModalVisible(false);
+    setNote('');
+    setWeight('');
+    await AsyncStorage.setItem('waterIntakeHistory', JSON.stringify(updatedHistory)); // Save the updated history
+  };
+
+  const handleYearSelect = (year: string) => {
+    setSelectedYear(year);
+    setYearModalVisible(false);
+  };
+
   // Prepare data for the chart
-  const dates = history.map(entry => entry.date);
-  const amounts = history.map(entry => entry.amount);
+  const dates = waterIntakeHistory.filter(entry => entry.amount !== undefined).map(entry => entry.date);
+  const amounts = waterIntakeHistory.filter(entry => entry.amount !== undefined).map(entry => entry.amount!);
 
   return (
     <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
       <View style={styles.container}>
         <Text style={styles.title}>Water Intake History</Text>
-        {history.length > 0 ? (
+        {amounts.length > 0 ? (
           <LineChart
             data={{
               labels: dates,
@@ -78,6 +119,90 @@ const Statistics: React.FC = () => {
         ) : (
           <Text style={styles.noDataText}>No water intake data available.</Text>
         )}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              {editMode ? (
+                <>
+                  <Text style={styles.modalText}>Add Note or Weight for {selectedDate}</Text>
+                  <TextInput
+                    style={[styles.input, styles.noteInput]}
+                    placeholder="Note"
+                    value={note}
+                    onChangeText={setNote}
+                    multiline={true}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Weight (kg)"
+                    value={weight}
+                    onChangeText={setWeight}
+                    keyboardType="numeric"
+                  />
+                  <TouchableOpacity
+                    style={[styles.button, styles.buttonClose]}
+                    onPress={handleSave}>
+                    <Text style={styles.textStyle}>Save</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.modalText}>Details for {selectedDate}</Text>
+                  <Text style={styles.noteText}>{note}</Text>
+                  <Text style={styles.weightText}>Weight: {weight} kg</Text>
+                  <TouchableOpacity
+                    style={[styles.button, styles.buttonClose]}
+                    onPress={() => setModalVisible(false)}>
+                    <Text style={styles.textStyle}>Close</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.button, styles.buttonEdit]}
+                    onPress={handleEdit}>
+                    <Text style={styles.textStyle}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.button, styles.buttonRemove]}
+                    onPress={handleRemove}>
+                    <Text style={styles.textStyle}>Remove</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </View>
+        </Modal>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={yearModalVisible}
+          onRequestClose={() => {
+            setYearModalVisible(!yearModalVisible);
+          }}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Select Year</Text>
+              <Picker
+                selectedValue={selectedYear}
+                onValueChange={(itemValue: string) => handleYearSelect(itemValue)}
+                style={styles.picker}
+              >
+                {Array.from({ length: 100 }, (_, i) => (new Date().getFullYear() - i).toString()).map(year => (
+                  <Picker.Item key={year} label={year} value={year} />
+                ))}
+              </Picker>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => setYearModalVisible(false)}>
+                <Text style={styles.textStyle}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     </ScrollView>
   );
@@ -109,6 +234,74 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 20,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+    marginTop: 10,
+  },
+  buttonClose: {
+    backgroundColor: '#2196F3',
+  },
+  buttonEdit: {
+    backgroundColor: '#F39C12',
+  },
+  buttonRemove: {
+    backgroundColor: '#E74C3C',
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  input: {
+    height: 40,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingLeft: 8,
+    width: 200,
+  },
+  noteInput: {
+    height: 80,
+  },
+  noteText: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  weightText: {
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  picker: {
+    height: 50,
+    width: 150,
   },
 });
 

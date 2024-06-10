@@ -1,83 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, Modal, TouchableOpacity, Image, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons'; // Make sure you have installed @expo/vector-icons
+import { Ionicons } from '@expo/vector-icons';
 import useFonts from '../hooks/useFonts';
 import { useUser } from '../context/UserContext';
 import { Link } from 'expo-router';
 import { userActivityLevelToText, userGoalToText, calculateDailyWaterIntakeAdvanced, calculateBMI } from '@/models/functions';
 import { calculateCalorieIntake, calculateMacrosIntake, calculateMicrosIntake } from '@/models/functions';
 import CircularProgress from 'react-native-circular-progress-indicator';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import useWaterIntake from '../hooks/useWaterIntake'; // Import the custom hook
 
 const Plan: React.FC = () => {
   const { user } = useUser();
   const fontsLoaded = useFonts();
   const [modalVisible, setModalVisible] = useState(false);
+  const [microsModalVisible, setMicrosModalVisible] = useState(false);
   const [currentWaterIntake, setCurrentWaterIntake] = useState('');
   const [totalWaterIntake, setTotalWaterIntake] = useState(0);
   const [waterPercentage, setWaterPercentage] = useState(0);
-  const [accumulatedWaterIntake, setAccumulatedWaterIntake] = useState(0);
   const shakeAnimation = useRef(new Animated.Value(0)).current;
   const [gifVisible, setGifVisible] = useState(false);
+  const { waterIntakeHistory, accumulatedWaterIntake, saveWaterIntake, loadWaterIntakeHistory } = useWaterIntake();
 
   useEffect(() => {
     if (user) {
       const totalIntake = calculateDailyWaterIntakeAdvanced(user.weight, user.age, user.gender || 'other', user.activityLevel);
       setTotalWaterIntake(totalIntake);
-      loadWaterIntake(); // Load water intake from storage
+      loadWaterIntakeHistory(); // Load water intake from storage
     }
   }, [user]);
 
   useEffect(() => {
     const percent = (accumulatedWaterIntake / totalWaterIntake) * 100;
     setWaterPercentage(percent);
-    saveWaterIntake(); // Save water intake to storage
   }, [accumulatedWaterIntake, totalWaterIntake]);
-
-  const loadWaterIntake = async () => {
-    try {
-      const savedIntake = await AsyncStorage.getItem('waterIntake');
-      const lastReset = await AsyncStorage.getItem('lastReset');
-      const currentTime = new Date().getTime();
-
-      if (lastReset) {
-        const timeDifference = currentTime - parseInt(lastReset);
-        const hoursDifference = timeDifference / (1000 * 60 * 60);
-
-        if (hoursDifference >= 24) {
-          setAccumulatedWaterIntake(0);
-          await AsyncStorage.setItem('lastReset', currentTime.toString());
-        } else if (savedIntake !== null) {
-          setAccumulatedWaterIntake(parseInt(savedIntake));
-        }
-      } else {
-        await AsyncStorage.setItem('lastReset', currentTime.toString());
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const saveWaterIntake = async () => {
-    try {
-      await AsyncStorage.setItem('waterIntake', accumulatedWaterIntake.toString());
-      const currentDate = new Date().toISOString().split('T')[0];
-      const history = await AsyncStorage.getItem('waterIntakeHistory');
-      const waterIntakeHistory = history ? JSON.parse(history) : [];
-
-      const todayEntry = waterIntakeHistory.find((entry: { date: string; }) => entry.date === currentDate);
-      if (todayEntry) {
-        todayEntry.amount = accumulatedWaterIntake;
-      } else {
-        waterIntakeHistory.push({ date: currentDate, amount: accumulatedWaterIntake });
-      }
-
-      await AsyncStorage.setItem('waterIntakeHistory', JSON.stringify(waterIntakeHistory));
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const handleWaterIntakeChange = (intake: string) => {
     setCurrentWaterIntake(intake);
@@ -86,7 +42,8 @@ const Plan: React.FC = () => {
   const handleAddWater = () => {
     const intakeValue = parseInt(currentWaterIntake);
     if (!isNaN(intakeValue)) {
-      setAccumulatedWaterIntake(accumulatedWaterIntake + intakeValue);
+      const newAccumulatedWaterIntake = accumulatedWaterIntake + intakeValue;
+      saveWaterIntake(newAccumulatedWaterIntake);
       setCurrentWaterIntake(''); // Clear input after adding
 
       // Trigger shake animation
@@ -229,7 +186,7 @@ const Plan: React.FC = () => {
                 <Text style={styles.macro}>Vitamin A: {micros.vitamins.vitaminA} mcg</Text>
               </>
             )}
-            <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <TouchableOpacity onPress={() => setMicrosModalVisible(true)}>
               <Text style={styles.link}>Click for more</Text>
             </TouchableOpacity>
           </View>
@@ -270,13 +227,51 @@ const Plan: React.FC = () => {
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
         >
-         <View style={styles.modalContainer}>
+          <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Info about data calculation</Text>
               <Text style={styles.modalText}>
                 To calculate BMR (Basal Metabolic Rate), we used the Harris-Benedict Equation. All values used were based on the individual's biometric data, including height, weight, age, and gender. The Harris-Benedict Equation is one of the most recognized methods for calculating BMR and provides accurate estimates based on the specific characteristics of the individual.
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={microsModalVisible}
+          onRequestClose={() => setMicrosModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Micronutrient Details</Text>
+              {micros && (
+                <>
+                  <Text style={styles.modalMacro}>Vitamin A: {micros.vitamins.vitaminA} mcg</Text>
+                  <Text style={styles.modalMacro}>Vitamin C: {micros.vitamins.vitaminC} mg</Text>
+                  <Text style={styles.modalMacro}>Vitamin D: {micros.vitamins.vitaminD} mcg</Text>
+                  <Text style={styles.modalMacro}>Vitamin E: {micros.vitamins.vitaminE} mg</Text>
+                  <Text style={styles.modalMacro}>Vitamin K: {micros.vitamins.vitaminK} mcg</Text>
+                  <Text style={styles.modalMacro}>Thiamin (B1): {micros.vitamins.vitaminB1} mg</Text>
+                  <Text style={styles.modalMacro}>Riboflavin (B2): {micros.vitamins.vitaminB2} mg</Text>
+                  <Text style={styles.modalMacro}>Niacin (B3): {micros.vitamins.vitaminB3} mg</Text>
+                  <Text style={styles.modalMacro}>Vitamin B6: {micros.vitamins.vitaminB6} mg</Text>
+                  <Text style={styles.modalMacro}>Folate (B9): {micros.vitamins.folate} mcg</Text>
+                  <Text style={styles.modalMacro}>Vitamin B12: {micros.vitamins.vitaminB12} mcg</Text>
+                  <Text style={styles.modalMacro}>Calcium: {micros.minerals.calcium} mg</Text>
+                  <Text style={styles.modalMacro}>Iron: {micros.minerals.iron} mg</Text>
+                  <Text style={styles.modalMacro}>Magnesium: {micros.minerals.magnesium} mg</Text>
+                  <Text style={styles.modalMacro}>Phosphorus: {micros.minerals.phosphorus} mg</Text>
+                  <Text style={styles.modalMacro}>Potassium: {micros.minerals.potassium} mg</Text>
+                  <Text style={styles.modalMacro}>Sodium: {micros.minerals.sodium} mg</Text>
+                  <Text style={styles.modalMacro}>Zinc: {micros.minerals.zinc} mg</Text>
+                </>
+              )}
+              <TouchableOpacity onPress={() => setMicrosModalVisible(false)} style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
             </View>
@@ -408,7 +403,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   macro: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
     fontFamily: 'SpaceMono-Regular',
     marginTop: 5,
