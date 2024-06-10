@@ -31,6 +31,14 @@ const Plan: React.FC = () => {
     }
   }, [user]);
 
+  if (!user) {
+    return (
+      <View style={styles.notLoggedInContainer}>
+        <Text style={styles.notLoggedInText}>Log in to see plans</Text>
+      </View>
+    ); // Show a message if user is not logged in
+  }
+
   useEffect(() => {
     const percent = (accumulatedWaterIntake / totalWaterIntake) * 100;
     setWaterPercentage(percent);
@@ -323,7 +331,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceMono-Regular',
   },
   plan: {
-    fontSize: 18,
+    fontSize: 15,
     color: '#333',
     fontFamily: 'SpaceMono-Regular',
     marginTop: 5,
@@ -343,6 +351,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 20,
     width: '48%',
+  },
+  notLoggedInContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  notLoggedInText: {
+    fontSize: 18,
+    color: '#000',
+    textAlign: 'center',
   },
   dailyCalorieContainer: {
     padding: 20,
