@@ -36,7 +36,6 @@ export default function Tracker() {
     const totalCaloriesConsumed = foodItems.reduce((sum, item) => sum + item.nutrients.ENERC_KCAL, 0);
     const remainingCalories = typeof dailyCalorieIntake === 'number'? dailyCalorieIntake - totalCaloriesConsumed : 0;
 
-
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <View style={styles.container}>
@@ -46,10 +45,12 @@ export default function Tracker() {
                 </View>
                 <Text style={{ fontSize: 18, fontWeight: '600' }}>Today's Logged Food</Text>
                 <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20}}>
-                <Link href="/search" asChild>
-                    <Button title="ADD FOOD" />
-                </Link>
-                <Ionicons name='barcode-outline' size={24}></Ionicons>
+                    <Link href="/search" asChild>
+                        <View>
+                            <Button title="ADD FOOD" />
+                        </View>
+                    </Link>
+                    <Ionicons name='barcode-outline' size={24}></Ionicons>
                 </View>
                 <FlatList
                     data={foodItems}
@@ -61,7 +62,6 @@ export default function Tracker() {
                     )}
                     contentContainerStyle={{ gap: 5 }}
                 />
-
             </View>
         </SafeAreaView>
     );

@@ -21,7 +21,7 @@ const FoodItem = ({ item, onAddFood }: { item: any, onAddFood: () => void }) => 
                       <Text>{item.nutrients.ENERC_KCAL} cal, {item.brand}</Text>
                   </View>
                   <TouchableOpacity onPress={handleAddFood}>
-                      <AntDesign name="pluscircleo" size={24} />
+                      <AntDesign name="pluscircleo" size={24} color={"#3279a8"}/>
                   </TouchableOpacity>
               </>
           )}
