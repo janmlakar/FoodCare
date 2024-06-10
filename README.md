@@ -11,4 +11,8 @@ Funkcionalnosti mobilne aplikacije:
   Tehnologije mobilne aplikacije:
   - React Native
   - Typescript
-  - Node.js & Express.js
+  - Firebase
+  - Expo Router
+  - Edamam API
+  - Stepzen GraphQL
+  - Apollo Client
