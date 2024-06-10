@@ -119,16 +119,18 @@ const Profile: React.FC = () => {
     router.push('/login');
   };
 
-  const handleInputChange = (field: keyof User, value: string | number) => {
-    if (localUser) {
-      const updatedUser = { ...localUser, [field]: value !== '' && !isNaN(Number(value)) ? Number(value) : '' };
-      setLocalUser(updatedUser);
-      if (auth.currentUser) {
-        setDoc(doc(firestore, 'users', auth.currentUser.uid), { [field]: updatedUser[field] }, { merge: true });
-        setUser(updatedUser);
-      }
+const handleInputChange = (field: keyof User, value: string | number) => {
+  if (localUser) {
+    // Preverite, ali je polje "name" in posodobite vrednost brez preverjanja na številko
+    const updatedUser = { ...localUser, [field]: field === 'name' ? value : value !== '' && !isNaN(Number(value)) ? Number(value) : '' };
+    setLocalUser(updatedUser);
+    if (auth.currentUser) {
+      setDoc(doc(firestore, 'users', auth.currentUser.uid), { [field]: updatedUser[field] }, { merge: true });
+      setUser(updatedUser);
     }
-  };
+  }
+};
+
 
   const handleButtonSelect = async (field: keyof User, value: string) => {
     if (localUser) {
