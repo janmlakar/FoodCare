@@ -4,7 +4,6 @@ import { Link } from "expo-router";
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../firebase/firebase';
-import ScreenTemplate from "./ScreenTemplate";
 import FoodItem from '../components/FoodItem';
 
 //If you are sedentary (little or no exercise) : Calorie-Calculation = BMR x 1.2. 
@@ -90,7 +89,6 @@ export default function Tracker() {
     };
 
     return (
-        <ScreenTemplate>
             <SafeAreaView style={{ flex: 1 }}>
                 <View style={styles.container}>
                     <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -108,6 +106,5 @@ export default function Tracker() {
                     />
                 </View>
             </SafeAreaView>
-        </ScreenTemplate>
     )
 }

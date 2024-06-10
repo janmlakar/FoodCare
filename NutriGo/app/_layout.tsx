@@ -48,9 +48,9 @@ const Layout = () => {
                 <Ionicons name="search-sharp" size={24} color={pathname === '/' ? "pink" : "grey"} />
                 {pathname === '/' && <PinkDot />}
               </NavButton>
-              <NavButton onPress={() => router.push('/calorie-tracker')}>
-                <Ionicons name="camera" size={24} color={pathname === '/calorie-tracker' ? "pink" : "grey"} />
-                {pathname === '/calorie-tracker' && <PinkDot />}
+              <NavButton onPress={() => router.push('/tracker')}>
+                <Ionicons name="camera" size={24} color={pathname === '/tracker' ? "pink" : "grey"} />
+                {pathname === '/tracker' && <PinkDot />}
               </NavButton>
               <NavButton onPress={() => router.push('/login')}>
                 <Ionicons name="person" size={24} color={pathname === '/profile'||pathname === '/login' ? "pink" : "grey"} />
