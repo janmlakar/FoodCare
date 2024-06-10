@@ -85,7 +85,6 @@ export default function Search() {
         ListEmptyComponent={() => !loading && <Text>Search for food</Text>}
         contentContainerStyle={styles.flatListContent}
       />
-
     </View>
   );
 }
