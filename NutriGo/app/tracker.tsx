@@ -5,6 +5,9 @@ import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../firebase/firebase';
 import FoodItem from '../components/FoodItem';
+import { ActivityLevel, Goal } from '@/models/User';
+import { useUser } from '@/hooks/useUser';
+import { calculateCalorieIntake } from '@/models/functions';
 
 //If you are sedentary (little or no exercise) : Calorie-Calculation = BMR x 1.2. 
 //If you are lightly active (light exercise/sports 1-3 days​/week) : Calorie-Calculation = BMR x 1.375. 
@@ -41,7 +44,7 @@ interface UserData {
 }
 
 export default function Tracker() {
-    const [userData, setUserData] = useState<UserData | null>(null);
+    const { user } = useUser();
     const [dailyCalories, setDailyCalories] = useState<number | null>(null);
 
     useEffect(() => {
@@ -52,8 +55,7 @@ export default function Tracker() {
                 const userDoc = await getDoc(doc(firestore, 'users', user.uid));
                 if (userDoc.exists()) {
                     const data = userDoc.data() as UserData;
-                    setUserData(data);
-                    calculateDailyCalories(data);
+                    calculateDailyCalories;
                 }
             }
         };
@@ -61,32 +63,77 @@ export default function Tracker() {
         fetchUserData();
     }, []);
 
-    const calculateDailyCalories = (data: UserData) => {
-        let BMR: number;
-        if (data.gender === 'male') {
-            BMR = 88.362 + (13.397 * data.weight) + (4.799 * data.height) - (5.677 * data.age);
+    const dailyCalorieIntake = user ? calculateCalorieIntake(
+        user.height,
+        user.weight,
+        user.age,
+        user.gender || 'other',  // Default to 'other' if gender is undefined
+        user.activityLevel,
+        user.goal
+      ) : 'Not set';
+
+    const calculateDailyCalories = (
+        height: number,
+        weight: number,
+        age: number,
+        gender: 'male' | 'female' | 'other' | undefined,
+        activityLevel: ActivityLevel | undefined,
+        goal: Goal | undefined
+      ): number | undefined => {
+        // Ensure gender is not undefined
+        if (!gender) return undefined;
+      
+        // Calculate BMR using the Harris-Benedict Equation
+        let BMR;
+        if (gender === 'male') {
+          BMR = 88.362 + 13.397 * weight + 4.799 * height - 5.677 * age;
+        } else if (gender === 'female') {
+          BMR = 447.593 + 9.247 * weight + 3.098 * height - 4.33 * age;
         } else {
-            BMR = 447.593 + (9.247 * data.weight) + (3.098 * data.height) - (4.330 * data.age);
+          // Handle 'other' gender by averaging male and female BMR
+          BMR =
+            (88.362 + 13.397 * weight + 4.799 * height - 5.677 * age +
+              447.593 + 9.247 * weight + 3.098 * height - 4.33 * age) /
+            2;
         }
-
-        let activityMultiplier: number;
-        switch (data.activityLevel) {
-            case 'low':
-                activityMultiplier = 1.2;
-                break;
-            case 'medium':
-                activityMultiplier = 1.55;
-                break;
-            case 'high':
-                activityMultiplier = 1.725;
-                break;
-            default:
-                activityMultiplier = 1.2;
+      
+        // Adjust BMR based on activity level
+        let activityMultiplier = 1.2; // Default to sedentary if undefined
+        switch (activityLevel) {
+          case ActivityLevel.LOW:
+            activityMultiplier = 1.2;
+            break;
+          case ActivityLevel.MEDIUM:
+            activityMultiplier = 1.55;
+            break;
+          case ActivityLevel.HIGH:
+            activityMultiplier = 1.9;
+            break;
+          default:
+            activityMultiplier = 1.2;
         }
-
-        const dailyCalories = BMR * activityMultiplier;
-        setDailyCalories(dailyCalories);
-    };
+      
+        const maintenanceCalories = BMR * activityMultiplier;
+      
+        // Adjust maintenance calories based on goal
+        let goalAdjustment = 0; // Default to maintenance if undefined
+        switch (goal) {
+          case Goal.WEIGHT_LOSS:
+            goalAdjustment = -500;
+            break;
+          case Goal.MUSCLE_GAIN:
+            goalAdjustment = 500;
+            break;
+          case Goal.MAINTENANCE:
+            goalAdjustment = 0;
+            break;
+          default:
+            goalAdjustment = 0;
+        }
+      
+        const dailyCalorieIntake = maintenanceCalories + goalAdjustment;
+        return Math.round(dailyCalorieIntake);
+      };
 
     return (
             <SafeAreaView style={{ flex: 1 }}>
