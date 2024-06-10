@@ -4,6 +4,8 @@ import { LineChart } from 'react-native-chart-kit';
 import useWaterIntake from '../hooks/useWaterIntake'; // Import the custom hook
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
+import CalendarComponent from './calendar';
+import { useUser } from '../context/UserContext'; // Import the user context
 
 interface HistoryEntry {
   date: string;
@@ -21,27 +23,32 @@ const Statistics: React.FC = () => {
   const [yearModalVisible, setYearModalVisible] = useState<boolean>(false);
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const { waterIntakeHistory, loadWaterIntakeHistory, setWaterIntakeHistory } = useWaterIntake();
+  const { user, loading } = useUser(); // Access user and loading state
 
   useEffect(() => {
-    loadWaterIntakeHistory();
-  }, []);
+    if (user) {
+      loadWaterIntakeHistory(); // Load history without arguments
+    }
+  }, [user]);
 
   const handleSave = async () => {
-    const newEntry: HistoryEntry = { date: selectedDate, note, weight: parseFloat(weight) };
-    const existingEntryIndex = waterIntakeHistory.findIndex(entry => entry.date === selectedDate);
-    let updatedHistory;
-    if (existingEntryIndex >= 0) {
-      updatedHistory = [...waterIntakeHistory];
-      updatedHistory[existingEntryIndex] = newEntry;
-    } else {
-      updatedHistory = [...waterIntakeHistory, newEntry];
-    }
+    if (user) {
+      const newEntry: HistoryEntry = { date: selectedDate, note, weight: parseFloat(weight) || 0 };
+      const existingEntryIndex = waterIntakeHistory.findIndex(entry => entry.date === selectedDate);
+      let updatedHistory;
+      if (existingEntryIndex >= 0) {
+        updatedHistory = [...waterIntakeHistory];
+        updatedHistory[existingEntryIndex] = newEntry;
+      } else {
+        updatedHistory = [...waterIntakeHistory, newEntry];
+      }
 
-    setWaterIntakeHistory(updatedHistory);
-    setModalVisible(false);
-    setNote('');
-    setWeight('');
-    await AsyncStorage.setItem('waterIntakeHistory', JSON.stringify(updatedHistory)); // Save the updated history
+      setWaterIntakeHistory(updatedHistory);
+      setModalVisible(false);
+      setNote('');
+      setWeight('');
+      await AsyncStorage.setItem(`waterIntakeHistory_${user.id}`, JSON.stringify(updatedHistory)); // Save the updated history
+    }
   };
 
   const handleEdit = () => {
@@ -49,12 +56,14 @@ const Statistics: React.FC = () => {
   };
 
   const handleRemove = async () => {
-    const updatedHistory = waterIntakeHistory.filter(entry => entry.date !== selectedDate);
-    setWaterIntakeHistory(updatedHistory);
-    setModalVisible(false);
-    setNote('');
-    setWeight('');
-    await AsyncStorage.setItem('waterIntakeHistory', JSON.stringify(updatedHistory)); // Save the updated history
+    if (user) {
+      const updatedHistory = waterIntakeHistory.filter(entry => entry.date !== selectedDate);
+      setWaterIntakeHistory(updatedHistory);
+      setModalVisible(false);
+      setNote('');
+      setWeight('');
+      await AsyncStorage.setItem(`waterIntakeHistory_${user.id}`, JSON.stringify(updatedHistory)); // Save the updated history
+    }
   };
 
   const handleYearSelect = (year: string) => {
@@ -65,6 +74,18 @@ const Statistics: React.FC = () => {
   // Prepare data for the chart
   const dates = waterIntakeHistory.filter(entry => entry.amount !== undefined).map(entry => entry.date);
   const amounts = waterIntakeHistory.filter(entry => entry.amount !== undefined).map(entry => entry.amount!);
+
+  if (loading) {
+    return <View style={styles.loadingContainer}><Text>Loading...</Text></View>; // Show a loading state while checking authentication
+  }
+
+  if (!user) {
+    return (
+      <View style={styles.notLoggedInContainer}>
+        <Text style={styles.notLoggedInText}>Log in to see statistics</Text>
+      </View>
+    ); // Show a message if user is not logged in
+  }
 
   return (
     <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
@@ -204,10 +225,12 @@ const Statistics: React.FC = () => {
           </View>
         </Modal>
       </View>
+      <View style={{ flex: 1 }}>
+        <CalendarComponent />
+      </View>
     </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
@@ -229,6 +252,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
     color: '#000',
+    fontFamily: 'SpaceMono-Regular',
   },
   noDataText: {
     fontSize: 16,
@@ -303,6 +327,27 @@ const styles = StyleSheet.create({
     height: 50,
     width: 150,
   },
+  notLoggedInContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  notLoggedInText: {
+    fontSize: 18,
+    color: '#000',
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
 });
 
 export default Statistics;
+function setAccumulatedWaterIntake(arg0: number) {
+  throw new Error('Function not implemented.');
+}
+

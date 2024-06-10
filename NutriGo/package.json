@@ -49,6 +49,7 @@
     "react-native-error-boundary": "^1.2.4",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-linear-gradient": "^2.8.3",
+    "react-native-modal": "^13.0.1",
     "react-native-navigation-bar-color": "^2.0.2",
     "react-native-progress-circle": "^2.1.0",
     "react-native-reanimated": "~3.10.1",

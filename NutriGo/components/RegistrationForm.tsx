@@ -22,6 +22,7 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
     goal: undefined,
     name: '',
     gender: undefined,
+    calorieIntake: 0, // Add this line
   });
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -185,8 +186,8 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
               >
                 <Picker.Item label="Select Activity Level" value={undefined} />
                 <Picker.Item label={userActivityLevelToText(ActivityLevel.LOW)} value={ActivityLevel.LOW} />
-                <Picker.Item label={userActivityLevelToText(ActivityLevel.LOW)} value={ActivityLevel.MEDIUM} />
-                <Picker.Item label={userActivityLevelToText(ActivityLevel.LOW)} value={ActivityLevel.HIGH} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.MEDIUM)} value={ActivityLevel.MEDIUM} />
+                <Picker.Item label={userActivityLevelToText(ActivityLevel.HIGH)} value={ActivityLevel.HIGH} />
               </Picker>
             </View>
           </LinearGradient>
