@@ -34,35 +34,41 @@ export default function Tracker() {
     );
 
     const totalCaloriesConsumed = foodItems.reduce((sum, item) => sum + item.nutrients.ENERC_KCAL, 0);
-    const remainingCalories = typeof dailyCalorieIntake === 'number'? dailyCalorieIntake - totalCaloriesConsumed : 0;
+    const remainingCalories = typeof dailyCalorieIntake === 'number' ? dailyCalorieIntake - totalCaloriesConsumed : 0;
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-            <View style={styles.container}>
-                <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ fontSize: 18, fontWeight: '600' }}>Calories</Text>
-                    <Text style={{ fontSize: 18, fontWeight: '600' }}>{dailyCalorieIntake} cal - {totalCaloriesConsumed} cal = {remainingCalories} cal</Text>
+         <SafeAreaView style={styles.container}>
+            {user ? (
+                <View style={styles.container}>
+                    <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={{ fontSize: 18, fontWeight: '600' }}>Calories</Text>
+                        <Text style={{ fontSize: 18, fontWeight: '600' }}>{dailyCalorieIntake} cal - {totalCaloriesConsumed} cal = {remainingCalories} cal</Text>
+                    </View>
+                    <Text style={{ fontSize: 18, fontWeight: '600' }}>Today's Logged Food</Text>
+                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20 }}>
+                        <Link href="/search" asChild>
+                            <View>
+                                <Button title="ADD FOOD" />
+                            </View>
+                        </Link>
+                        <Ionicons name='barcode-outline' size={24}></Ionicons>
+                    </View>
+                    <FlatList
+                        data={foodItems}
+                        renderItem={({ item }) => (
+                            <FoodItem
+                                item={item}
+                                onAddFood={() => addFoodItem(item)}
+                            />
+                        )}
+                        contentContainerStyle={{ gap: 5 }}
+                    />
                 </View>
-                <Text style={{ fontSize: 18, fontWeight: '600' }}>Today's Logged Food</Text>
-                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20}}>
-                    <Link href="/search" asChild>
-                        <View>
-                            <Button title="ADD FOOD" />
-                        </View>
-                    </Link>
-                    <Ionicons name='barcode-outline' size={24}></Ionicons>
+            ) : (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 18, fontWeight: '600' }}>Login to see Food Log</Text>
                 </View>
-                <FlatList
-                    data={foodItems}
-                    renderItem={({ item }) => (
-                        <FoodItem
-                            item={item}
-                            onAddFood={() => addFoodItem(item)}
-                        />
-                    )}
-                    contentContainerStyle={{ gap: 5 }}
-                />
-            </View>
-        </SafeAreaView>
+            )}
+            </SafeAreaView>
     );
 }

@@ -82,7 +82,7 @@ const Statistics: React.FC = () => {
   if (!user) {
     return (
       <View style={styles.notLoggedInContainer}>
-        <Text style={styles.notLoggedInText}>Log in to see statistics</Text>
+        <Text style={styles.notLoggedInText}>Login to see Statistics</Text>
       </View>
     ); // Show a message if user is not logged in
   }
