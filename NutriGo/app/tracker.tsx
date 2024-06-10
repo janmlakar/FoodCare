@@ -68,7 +68,7 @@ export default function Tracker() {
                 </View>
             ) : (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 18, fontWeight: '600' }}>Login to see Food Log</Text>
+                    <Text style={{ fontSize: 18, color: '#000',textAlign: 'center' }}>Login to see Food Log</Text>
                 </View>
             )}
         </SafeAreaView>

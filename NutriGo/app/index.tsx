@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Text, TouchableOpacity, View, ScrollView, SafeAreaView, StyleSheet, Animated, Image, Dimensions, ActivityIndicator } from 'react-native';
+import { Text, View, ScrollView, SafeAreaView, StyleSheet, Animated, Image, ActivityIndicator, Dimensions } from 'react-native';
 import { useFonts } from 'expo-font';
 import ErrorBoundary from 'react-native-error-boundary';
 import SearchForm from '../components/SearchForm';
 import RecipeList from '../components/RecipeList';
 import RecipeModal from '../components/RecipeModal';
-
-
+import SplashScreen from '../components/SplashScreen'; // Import the SplashScreen component
 
 interface Recipe {
   label: string;
@@ -44,6 +43,7 @@ const App: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const animatedValue = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
+  const [isSplashVisible, setIsSplashVisible] = useState(true); // New state for splash screen visibility
 
   const screenHeight = Dimensions.get('window').height;
 
@@ -146,6 +146,10 @@ const App: React.FC = () => {
     setModalVisible(false);
   };
 
+  const handleGetStarted = () => {
+    setIsSplashVisible(false); // Hide splash screen when button is pressed
+  };
+
   const animatedStyle = {
     opacity: animatedValue.interpolate({
       inputRange: [0, 1],
@@ -163,42 +167,36 @@ const App: React.FC = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      <View style={styles.container}>
-        <View style={styles.glitterWrapper} pointerEvents="none"></View>
-        <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.innerContainer}>
-            <Text style={styles.title}>Recipe Search</Text>
-            <SearchForm
-              query={query}
-              setQuery={setQuery}
-              healthLabels={healthLabels}
-              setHealthLabels={setHealthLabels}
-              dietLabels={dietLabels}
-              setDietLabels={setDietLabels}
-              calories={calories}
-              setCalories={setCalories}
-              fetchRecipes={fetchRecipes}
-            />
-            {loading && <Image style={styles.splashImage} source={require('../assets/images/fruit.gif')} />}
-            {!loading && recipes && recipes.length > 0 && <RecipeList data={recipes} openModal={openModal} />}
-            {!loading && recipes && recipes.length === 0 && <Text style={styles.errorMessage}>{errorMessage}</Text>}
-            {recipes && (
-              <View style={styles.buttonRow}>
-                <Animated.View style={[styles.hideButton, animatedStyle]}>
-                  <TouchableOpacity onPress={() => setRecipes(null)}>
-                    <Text style={styles.hideButtonText}>Hide</Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              </View>
-            )}
-          </View>
+      {isSplashVisible ? (
+        <SplashScreen onGetStarted={handleGetStarted} /> // Display splash screen
+      ) : (
+        <View style={styles.container}>
+          <View style={styles.glitterWrapper} pointerEvents="none"></View>
+          <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollViewContent}>
+            <View style={styles.innerContainer}>
+              <Text style={styles.title}>Recipe Search</Text>
+              <SearchForm
+                query={query}
+                setQuery={setQuery}
+                healthLabels={healthLabels}
+                setHealthLabels={setHealthLabels}
+                dietLabels={dietLabels}
+                setDietLabels={setDietLabels}
+                calories={calories}
+                setCalories={setCalories}
+                fetchRecipes={fetchRecipes}
+              />
+              {loading && <Image style={styles.splashImage} source={require('../assets/images/fruit.gif')} />}
+              {!loading && recipes && recipes.length > 0 && <RecipeList data={recipes} openModal={openModal} />}
+              {!loading && recipes && recipes.length === 0 && <Text style={styles.errorMessage}>{errorMessage}</Text>}
+            </View>
+          </ScrollView>
           <RecipeModal visible={modalVisible} onClose={closeModal} recipe={selectedRecipe} />
-        </ScrollView>
-      </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   splashImage: {
     width: 300,
