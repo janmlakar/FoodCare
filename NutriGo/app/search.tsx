@@ -1,9 +1,11 @@
 // search.tsx
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, Button, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, Button, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { gql, useLazyQuery } from '@apollo/client';
 import FoodItem from '@/components/FoodItem';
 import { useFood } from '@/components/FoodList';
+import { Ionicons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 
 const query = gql`
 query search($ingr: String) {
@@ -64,7 +66,22 @@ export default function Search() {
         placeholder="Search..."
         style={styles.input}
       />
-      {search && <Button title="Search" onPress={performSearch} />}
+      {search && <View style={{
+        display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' 
+      }}>
+        <Link href="/tracker" asChild>
+        <TouchableOpacity >
+        <View>
+        <Ionicons name="arrow-back-outline" size={24} />
+        </View>
+        </TouchableOpacity>
+        </Link>
+        <View style={{
+        flex: 1,
+      }} >
+        <Button title="Search" onPress={performSearch} />
+        </View>
+        </View>}
       {loading && <ActivityIndicator />}
       {error && <Text style={styles.errorText}>Error: {error.message}</Text>}
       <FlatList
