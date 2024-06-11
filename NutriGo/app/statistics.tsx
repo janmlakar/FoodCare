@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView, TextInput, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import useWaterIntake from '../hooks/useWaterIntake'; // Import the custom hook
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Picker } from '@react-native-picker/picker';
 import CalendarComponent from './calendar';
-import { useUser } from '../context/UserContext'; // Import the user context
+import { useUser } from '../context/UserContext';
+import useWaterIntake from '../hooks/useWaterIntake';
+import { calculateCalorieIntake } from '@/models/functions';
 
 interface HistoryEntry {
   date: string;
   amount?: number;
   note?: string;
   weight?: number;
+  calories?: number;
 }
 
 const Statistics: React.FC = () => {
@@ -23,60 +24,80 @@ const Statistics: React.FC = () => {
   const [yearModalVisible, setYearModalVisible] = useState<boolean>(false);
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const { waterIntakeHistory, loadWaterIntakeHistory, setWaterIntakeHistory } = useWaterIntake();
-  const { user, loading } = useUser(); // Access user and loading state
+  const { user, loading } = useUser();
+  const [dailyCalories, setDailyCalories] = useState<HistoryEntry[]>([]);
+  const [dailyCalorieIntake, setDailyCalorieIntake] = useState(0);
+  const [totalCaloriesConsumed, setTotalCaloriesConsumed] = useState<number>(0);
+  const [lastUpdateDate, setLastUpdateDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     if (user) {
-      loadWaterIntakeHistory(); // Load history without arguments
+      loadWaterIntakeHistory();
+      fetchDailyCalories();
+      const intake = calculateCalorieIntake(
+        user.height,
+        user.weight,
+        user.age,
+        user.gender || 'other',
+        user.activityLevel,
+        user.goal
+      );
+      setDailyCalorieIntake(intake || 0);
     }
   }, [user]);
 
-  const handleSave = async () => {
-    if (user) {
-      const newEntry: HistoryEntry = { date: selectedDate, note, weight: parseFloat(weight) || 0 };
-      const existingEntryIndex = waterIntakeHistory.findIndex(entry => entry.date === selectedDate);
-      let updatedHistory;
-      if (existingEntryIndex >= 0) {
-        updatedHistory = [...waterIntakeHistory];
-        updatedHistory[existingEntryIndex] = newEntry;
-      } else {
-        updatedHistory = [...waterIntakeHistory, newEntry];
+  const fetchDailyCalories = async () => {
+    try {
+      if (user) {
+        const storedCalories = await AsyncStorage.getItem(`dailyCalories_${user.uid}`);
+        if (storedCalories) {
+          const parsedCalories = JSON.parse(storedCalories);
+          setDailyCalories(parsedCalories);
+          const todayCalories = parsedCalories.find((entry: { date: string }) => entry.date === new Date().toISOString().split('T')[0])?.calories || 0;
+          setTotalCaloriesConsumed(todayCalories);
+        }
       }
-
-      setWaterIntakeHistory(updatedHistory);
-      setModalVisible(false);
-      setNote('');
-      setWeight('');
-      await AsyncStorage.setItem(`waterIntakeHistory_${user.id}`, JSON.stringify(updatedHistory)); // Save the updated history
+    } catch (error) {
+      console.error('Error fetching daily calories:', error);
     }
   };
 
-  const handleEdit = () => {
-    setEditMode(true);
-  };
+  useEffect(() => {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
 
-  const handleRemove = async () => {
-    if (user) {
-      const updatedHistory = waterIntakeHistory.filter(entry => entry.date !== selectedDate);
-      setWaterIntakeHistory(updatedHistory);
-      setModalVisible(false);
-      setNote('');
-      setWeight('');
-      await AsyncStorage.setItem(`waterIntakeHistory_${user.id}`, JSON.stringify(updatedHistory)); // Save the updated history
+    if (today !== lastUpdateDate) {
+      resetCalories();
+      setLastUpdateDate(today);
     }
+
+    // Set interval for every minute for testing purposes
+    const intervalId = setInterval(() => {
+      resetCalories();
+      setLastUpdateDate(new Date().toISOString().split('T')[0]);
+    }, 60000); // 60000ms = 1 minute
+
+    return () => clearInterval(intervalId);
+  }, [lastUpdateDate]);
+
+  const resetCalories = async () => {
+    if (!user) return;
+    const newDate = new Date().toISOString().split('T')[0];
+    await AsyncStorage.setItem(`dailyCalories_${user.uid}`, JSON.stringify([{ date: newDate, calories: 0 }]));
+    setDailyCalories([{ date: newDate, calories: 0 }]);
+    setTotalCaloriesConsumed(0);
   };
 
-  const handleYearSelect = (year: string) => {
-    setSelectedYear(year);
-    setYearModalVisible(false);
-  };
+  // Prepare data for the water intake chart
+  const waterDates = waterIntakeHistory.filter(entry => entry.amount !== undefined).map(entry => entry.date);
+  const waterAmounts = waterIntakeHistory.filter(entry => entry.amount !== undefined).map(entry => entry.amount!);
 
-  // Prepare data for the chart
-  const dates = waterIntakeHistory.filter(entry => entry.amount !== undefined).map(entry => entry.date);
-  const amounts = waterIntakeHistory.filter(entry => entry.amount !== undefined).map(entry => entry.amount!);
+  // Prepare data for the calorie intake chart
+  const calorieDates = dailyCalories.map(entry => entry.date);
+  const calorieAmounts = dailyCalories.map(entry => entry.calories || 0);
 
   if (loading) {
-    return <View style={styles.loadingContainer}><Text>Loading...</Text></View>; // Show a loading state while checking authentication
+    return <View style={styles.loadingContainer}><Text>Loading...</Text></View>;
   }
 
   if (!user) {
@@ -84,26 +105,26 @@ const Statistics: React.FC = () => {
       <View style={styles.notLoggedInContainer}>
         <Text style={styles.notLoggedInText}>Login to see Statistics</Text>
       </View>
-    ); // Show a message if user is not logged in
+    );
   }
 
   return (
     <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
       <View style={styles.container}>
         <Text style={styles.title}>Water Intake History</Text>
-        {amounts.length > 0 ? (
+        {waterAmounts.length > 0 ? (
           <LineChart
             data={{
-              labels: dates,
+              labels: waterDates,
               datasets: [
                 {
-                  data: amounts,
-                  color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`, // Custom color for the dataset
-                  strokeWidth: 2, // Customize the line thickness
+                  data: waterAmounts,
+                  color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`,
+                  strokeWidth: 2,
                 },
               ],
             }}
-            width={Dimensions.get('window').width - 40} // Adjust width to fit within the container
+            width={Dimensions.get('window').width - 40}
             height={280}
             yAxisLabel=""
             yAxisSuffix="ml"
@@ -112,20 +133,20 @@ const Statistics: React.FC = () => {
               backgroundGradientFrom: '#f5f5f5',
               backgroundGradientTo: '#ffffff',
               decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(0, 0, 139, ${opacity})`, // Dark blue color
+              color: (opacity = 1) => `rgba(0, 0, 139, ${opacity})`,
               labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
               style: {
                 borderRadius: 16,
                 borderWidth: 1,
-                borderColor: '#ddd', // Thin gray border
+                borderColor: '#ddd',
               },
               propsForDots: {
                 r: '6',
                 strokeWidth: '2',
-                stroke: '#00008B', // Dark blue color for dots
+                stroke: '#00008B',
               },
               propsForBackgroundLines: {
-                strokeDasharray: '', // Solid background lines
+                strokeDasharray: '',
               },
             }}
             bezier
@@ -133,97 +154,67 @@ const Statistics: React.FC = () => {
               marginVertical: 8,
               borderRadius: 16,
               borderWidth: 1,
-              borderColor: '#ddd', // Light gray border
-              marginHorizontal: 10, // Adjust horizontal margin to center the chart
+              borderColor: '#ddd',
+              marginHorizontal: 10,
             }}
           />
         ) : (
           <Text style={styles.noDataText}>No water intake data available.</Text>
         )}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible);
-          }}>
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              {editMode ? (
-                <>
-                  <Text style={styles.modalText}>Add Note or Weight for {selectedDate}</Text>
-                  <TextInput
-                    style={[styles.input, styles.noteInput]}
-                    placeholder="Note"
-                    value={note}
-                    onChangeText={setNote}
-                    multiline={true}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Weight (kg)"
-                    value={weight}
-                    onChangeText={setWeight}
-                    keyboardType="numeric"
-                  />
-                  <TouchableOpacity
-                    style={[styles.button, styles.buttonClose]}
-                    onPress={handleSave}>
-                    <Text style={styles.textStyle}>Save</Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.modalText}>Details for {selectedDate}</Text>
-                  <Text style={styles.noteText}>{note}</Text>
-                  <Text style={styles.weightText}>Weight: {weight} kg</Text>
-                  <TouchableOpacity
-                    style={[styles.button, styles.buttonClose]}
-                    onPress={() => setModalVisible(false)}>
-                    <Text style={styles.textStyle}>Close</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.button, styles.buttonEdit]}
-                    onPress={handleEdit}>
-                    <Text style={styles.textStyle}>Edit</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.button, styles.buttonRemove]}
-                    onPress={handleRemove}>
-                    <Text style={styles.textStyle}>Remove</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
+      </View>
+      <View style={styles.container}>
+        <Text style={styles.title}>Daily Calorie Intake History</Text>
+        {calorieAmounts.length > 0 ? (
+          <View style={styles.chartContainer}>
+            <LineChart
+              data={{
+                labels: calorieDates,
+                datasets: [
+                  {
+                    data: calorieAmounts,
+                    color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
+                    strokeWidth: 2,
+                  },
+                ],
+              }}
+              width={Dimensions.get('window').width - 40}
+              height={280}
+              yAxisLabel=""
+              yAxisSuffix="kcal"
+              chartConfig={{
+                backgroundColor: '#f5f5f5',
+                backgroundGradientFrom: '#f5f5f5',
+                backgroundGradientTo: '#ffffff',
+                decimalPlaces: 0,
+                color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                style: {
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                },
+                propsForDots: {
+                  r: '6',
+                  strokeWidth: '2',
+                  stroke: '#ff6347',
+                },
+                propsForBackgroundLines: {
+                  strokeDasharray: '',
+                },
+              }}
+              bezier
+              style={{
+                marginVertical: 8,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: '#ddd',
+                marginHorizontal: 10,
+              }}
+            />
           </View>
-        </Modal>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={yearModalVisible}
-          onRequestClose={() => {
-            setYearModalVisible(!yearModalVisible);
-          }}>
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={styles.modalText}>Select Year</Text>
-              <Picker
-                selectedValue={selectedYear}
-                onValueChange={(itemValue: string) => handleYearSelect(itemValue)}
-                style={styles.picker}
-              >
-                {Array.from({ length: 100 }, (_, i) => (new Date().getFullYear() - i).toString()).map(year => (
-                  <Picker.Item key={year} label={year} value={year} />
-                ))}
-              </Picker>
-              <TouchableOpacity
-                style={[styles.button, styles.buttonClose]}
-                onPress={() => setYearModalVisible(false)}>
-                <Text style={styles.textStyle}>Close</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+        ) : (
+          <Text style={styles.noDataText}>No calorie intake data available.</Text>
+        )}
       </View>
       <View style={{ flex: 1 }}>
         <CalendarComponent />
@@ -231,20 +222,21 @@ const Statistics: React.FC = () => {
     </ScrollView>
   );
 };
+
 const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
-    backgroundColor: '#fff', // Ensure entire background is white
+    backgroundColor: '#fff',
   },
   scrollContent: {
-    alignItems: 'center', // Center content horizontally
+    alignItems: 'center',
   },
   container: {
     padding: 10,
     backgroundColor: '#fff',
     borderRadius: 10,
     marginVertical: 20,
-    width: Dimensions.get('window').width + 10, // Ensure container fits within the screen width
+    width: Dimensions.get('window').width - 20,
   },
   title: {
     fontSize: 24,
@@ -344,10 +336,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
+  calorieInfoContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  calorieTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    fontFamily: 'SpaceMono-Regular',
+    marginBottom: 5,
+  },
+  legendText: {
+    fontSize: 14,
+    color: '#000',
+    fontFamily: 'SpaceMono-Regular',
+    textAlign: 'center',
+    marginTop: 5,
+  },
+  legendContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  chartContainer: {
+    marginVertical: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 10,
+    backgroundColor: '#fff',
+  },
 });
 
 export default Statistics;
-function setAccumulatedWaterIntake(arg0: number) {
-  throw new Error('Function not implemented.');
-}
-

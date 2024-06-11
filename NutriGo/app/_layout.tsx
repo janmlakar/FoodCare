@@ -23,10 +23,6 @@ const Layout = () => {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    NavigationBar.setBackgroundColorAsync('#1a001a');
-  }, []);
-
   return (
     <ApolloProvider client={client}>
 
@@ -71,7 +67,7 @@ const Layout = () => {
 const Container = styled.View`
   flex: 1;
   justify-content: space-between;
-  background-color: rgba(30, 5, 50, 1);
+  background-color: white;
 `;
 
 const Content = styled.View`

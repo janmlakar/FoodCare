@@ -306,7 +306,7 @@ const calculateMicrosIntake = (
   return { vitamins, minerals };
 };
 
-export { calculateCalorieIntake, calculateMacrosIntake, calculateMicrosIntake };
+export { calculateCalorieIntake, calculateMacrosIntake, calculateMicrosIntake, ActivityLevel, Goal };
 
 export const calculateDailyWaterIntakeAdvanced = (
   weight: number,

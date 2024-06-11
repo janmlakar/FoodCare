@@ -349,15 +349,17 @@ const styles = StyleSheet.create({
   },
   label1: {
     fontSize: 20,
-    color: '#000',
-    marginBottom: 20,
+    fontWeight: 'bold',
+    color: '#333',
     fontFamily: 'SpaceMono-Regular',
+    marginBottom: 10,
   },
   label2: {
     fontSize: 15,
-    color: '#000',
-    marginBottom: 20,
+    fontWeight: 'bold',
+    color: '#333',
     fontFamily: 'SpaceMono-Regular',
+    marginBottom: 10,
   },
   inputContainer: {
     width: '100%',

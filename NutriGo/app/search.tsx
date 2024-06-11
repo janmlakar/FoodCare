@@ -6,7 +6,7 @@ import { useFood } from '@/components/FoodList';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '../context/UserContext';
 
 const query = gql`
@@ -32,20 +32,62 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 10,
-    gap: 10,
     paddingTop: 50,
   },
-  input: {
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  textInput: {
     flex: 1,
     padding: 10,
     backgroundColor: 'gainsboro',
     borderRadius: 20,
+    fontSize: 16,
+    fontWeight: '600',
   },
+  button: {
+    borderRadius: 5,
+    minWidth: 100,
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 70,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  
   flatListContent: {
     gap: 5,
   },
   errorText: {
     color: 'red',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+  },
+  searchButton: {
+    borderRadius: 5,
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  foodItemContainer: {
+    borderRadius: 10,
+    padding: 10,
+    marginVertical: 5,
+    overflow: 'hidden',
+  },
+  foodItemGradient: {
+    borderRadius: 10,
+    padding: 10,
   },
 });
 
@@ -103,48 +145,48 @@ export default function Search() {
 
   return (
     <View style={styles.container}>
-      <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10, }}>
+      <Link href="/tracker" asChild>
+        <TouchableOpacity style={styles.backButton}>
+          <Ionicons name="arrow-back-outline" size={24} />
+        </TouchableOpacity>
+      </Link>
+      <View style={styles.inputContainer}>
         <TextInput
           value={search}
           onChangeText={setSearch}
           placeholder="Search..."
-          style={styles.input}
+          style={styles.textInput}
         />
         <Ionicons onPress={() => setScannerEnabled(true)} name='barcode-outline' size={32} />
       </View>
-      <View style={{
-        display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 10,
-      }}>
-        <Link href="/tracker" asChild>
-          <TouchableOpacity >
-            <View>
-              <Ionicons name="arrow-back-outline" size={24} />
-            </View>
-          </TouchableOpacity>
-        </Link>
-        <View>
-          <Button title="Search" onPress={performSearch} />
-        </View>
-      </View>
+      <TouchableOpacity onPress={performSearch} style={styles.button}>
+        <LinearGradient colors={['#92A3FD', '#9DCEFF']} style={styles.button}>
+          <Text style={styles.buttonText}>Search</Text>
+        </LinearGradient>
+      </TouchableOpacity>
       {loading && <ActivityIndicator />}
       {error && <Text style={styles.errorText}>Error: {error.message}</Text>}
       <FlatList
         data={items}
         renderItem={({ item }) => (
-          <FoodItem
-            item={item.food}
-            onAddFood={() => {
-              addFoodItem({
-                foodId: item.food.foodId,
-                label: item.food.label,
-                nutrients: item.food.nutrients,
-                brand: item.food.brand,
-                userId: ''
-              });
-            }}
-          />
+          <View style={styles.foodItemContainer}>
+            <LinearGradient colors={['#92A3FD', '#9DCEFF']} style={styles.foodItemGradient}>
+              <FoodItem
+                item={item.food}
+                onAddFood={() => {
+                  addFoodItem({
+                    foodId: item.food.foodId,
+                    label: item.food.label,
+                    nutrients: item.food.nutrients,
+                    brand: item.food.brand,
+                    userId: ''
+                  });
+                }}
+              />
+            </LinearGradient>
+          </View>
         )}
-        ListEmptyComponent={() => !loading && <Text>Search for food</Text>}
+       
         contentContainerStyle={styles.flatListContent}
       />
     </View>

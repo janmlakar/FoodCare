@@ -17,7 +17,8 @@ export enum Goal {
   MUSCLE_GAIN = "muscle_gain",
   MAINTENANCE = "maintenance",
   MILD_WEIGHT_LOSS ="Mild weight loss",
-  EXTREME_WEIGHT_LOSS="Extreme weight loss"
+  EXTREME_WEIGHT_LOSS="Extreme weight loss",
+  MAINTAIN = "MAINTAIN"
 }
 
 export interface User {
