@@ -1,4 +1,3 @@
-// search.tsx
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, Button, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { gql, useLazyQuery } from '@apollo/client';

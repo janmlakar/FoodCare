@@ -1,4 +1,3 @@
-// tracker.tsx
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { Link } from "expo-router";
@@ -6,7 +5,6 @@ import { useFood } from '@/components/FoodList';
 import FoodItem from '../components/FoodItem';
 import { useUser } from '@/hooks/useUser';
 import { calculateCalorieIntake } from '@/models/functions';
-import { Ionicons } from '@expo/vector-icons';
 
 const styles = StyleSheet.create({
     container: {
@@ -74,8 +72,8 @@ export default function Tracker() {
         const calories = parseInt(caloriesInput, 10);
         if (!isNaN(calories)) {
             const manualFoodItem = {
-                id: `manual-${Date.now()}`, // Unique ID for the manual entry
-                foodId: `manual-${Date.now()}`, // Unique foodId for the manual entry
+                id: `manual-${Date.now()}`,
+                foodId: `manual-${Date.now()}`,
                 name: 'Manual Calories',
                 label: 'Manual Calories',
                 nutrients: {
@@ -124,8 +122,8 @@ export default function Tracker() {
                         renderItem={({ item }) => (
                             <FoodItem
                                 item={item}
-                                isAdded={true} // Indicate that the item is already added
-                                onRemoveFood={() => removeFoodItem(item.id!)} // Pass the remove function
+                                isAdded={true}
+                                onRemoveFood={() => removeFoodItem(item.id!)}
                             />
                         )}
                         contentContainerStyle={{ gap: 5 }}

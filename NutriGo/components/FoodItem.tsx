@@ -1,4 +1,3 @@
-// FoodItem.tsx
 import { AntDesign } from "@expo/vector-icons";
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
