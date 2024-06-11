@@ -6,6 +6,8 @@ import { useFood } from '@/components/FoodList';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from '../context/UserContext';
 
 const query = gql`
 query search($ingr: String, $upc: String) {
@@ -48,6 +50,7 @@ const styles = StyleSheet.create({
 });
 
 export default function Search() {
+  const { user } = useUser();
   const [search, setSearch] = useState('');
   const { addFoodItem } = useFood();
   const [scannerEnabled, setScannerEnabled] = useState(false);
@@ -136,6 +139,7 @@ export default function Search() {
                 label: item.food.label,
                 nutrients: item.food.nutrients,
                 brand: item.food.brand,
+                userId: ''
               });
             }}
           />

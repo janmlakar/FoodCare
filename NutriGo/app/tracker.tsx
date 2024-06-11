@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { Link } from "expo-router";
+import { useUser } from '@/hooks/useUser';
 import { useFood } from '@/components/FoodList';
 import FoodItem from '../components/FoodItem';
-import { useUser } from '@/hooks/useUser';
 import { calculateCalorieIntake } from '@/models/functions';
 
 const styles = StyleSheet.create({
@@ -56,7 +56,15 @@ export default function Tracker() {
     const { foodItems, addFoodItem, removeFoodItem } = useFood();
     const [caloriesInput, setCaloriesInput] = useState('');
 
-    const dailyCalorieIntake = user && calculateCalorieIntake(
+    if (!user) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ fontSize: 18, color: '#000', textAlign: 'center' }}>Login to see Food Log</Text>
+            </View>
+        );
+    }
+
+    const dailyCalorieIntake = calculateCalorieIntake(
         user.height,
         user.weight,
         user.age,
@@ -72,8 +80,9 @@ export default function Tracker() {
         const calories = parseInt(caloriesInput, 10);
         if (!isNaN(calories)) {
             const manualFoodItem = {
-                id: `manual-${Date.now()}`,
-                foodId: `manual-${Date.now()}`,
+                id: `manual-${user.uid}-${Date.now()}`,
+                foodId: `manual-${user.uid}-${Date.now()}`,
+                userId: user.uid,
                 name: 'Manual Calories',
                 label: 'Manual Calories',
                 nutrients: {
@@ -89,51 +98,46 @@ export default function Tracker() {
 
     return (
         <SafeAreaView style={styles.container}>
-            {user ? (
-                <View style={styles.container}>
-                    <Text style={styles.title}>Daily Food Log</Text>
-                    <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 18, fontWeight: '600' }}>Calories</Text>
-                        <Text style={{ fontSize: 18, fontWeight: '600' }}>{dailyCalorieIntake} cal - {totalCaloriesConsumed} cal = {remainingCalories} cal</Text>
-                    </View>
-                    <Text style={{ fontSize: 18, fontWeight: '600' }}>Today's Logged Food</Text>
-                    <View style={styles.inputContainer}>
-                        <Link href="/search" asChild>
-                            <TouchableOpacity style={styles.button}>
-                                <Text style={styles.buttonText}>ADD FOOD</Text>
-                            </TouchableOpacity>
-                        </Link>
-                        <TextInput
-                            style={styles.textInput}
-                            placeholder='Enter calories...'
-                            value={caloriesInput}
-                            onChangeText={setCaloriesInput}
-                            keyboardType='numeric'
-                        />
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={handleAddCalories}
-                        >
-                            <Text style={styles.buttonText}>ADD CALORIES</Text>
+            <View style={styles.container}>
+                <Text style={styles.title}>Daily Food Log</Text>
+                <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 18, fontWeight: '600' }}>Calories</Text>
+                    <Text style={{ fontSize: 18, fontWeight: '600' }}>{dailyCalorieIntake} cal - {totalCaloriesConsumed} cal = {remainingCalories} cal</Text>
+                </View>
+                <Text style={{ fontSize: 18, fontWeight: '600' }}>Today's Logged Food</Text>
+                <View style={styles.inputContainer}>
+                    <Link href="/search" asChild>
+                        <TouchableOpacity style={styles.button}>
+                            <Text style={styles.buttonText}>ADD FOOD</Text>
                         </TouchableOpacity>
-                    </View>
-                    <FlatList
-                        data={foodItems}
-                        renderItem={({ item }) => (
-                            <FoodItem
-                                item={item}
-                                isAdded={true}
-                                onRemoveFood={() => removeFoodItem(item.id!)}
-                            />
-                        )}
-                        contentContainerStyle={{ gap: 5 }}
+                    </Link>
+                    <TextInput
+                        style={styles.textInput}
+                        placeholder='Enter calories...'
+                        value={caloriesInput}
+                        onChangeText={setCaloriesInput}
+                        keyboardType='numeric'
                     />
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleAddCalories}
+                    >
+                        <Text style={styles.buttonText}>ADD CALORIES</Text>
+                    </TouchableOpacity>
                 </View>
-            ) : (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 18, color: '#000', textAlign: 'center' }}>Login to see Food Log</Text>
-                </View>
-            )}
+                <FlatList
+                    data={foodItems}
+                    renderItem={({ item }) => (
+                        <FoodItem
+                            item={item}
+                            isAdded={true}
+                            onRemoveFood={() => removeFoodItem(item.id!)}
+                        />
+                    )}
+                    keyExtractor={(item) => item.id!}
+                    contentContainerStyle={{ gap: 5 }}
+                />
+            </View>
         </SafeAreaView>
     );
 }

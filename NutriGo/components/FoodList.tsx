@@ -10,6 +10,7 @@ interface FoodItem {
   };
   brand?: string;
   id?: string;
+  userId: string;
 }
 
 interface FoodContextProps {
