@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Text, Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { auth, firestore } from '../firebase/firebase';
-import { setDoc, doc } from "firebase/firestore";
+import { setDoc, doc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { ActivityLevel, Goal, User } from '../models/User';
 import { LinearGradient } from 'expo-linear-gradient';
 import { userActivityLevelToText, userGoalToText } from '@/models/functions';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
-const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubmit }) => {
+const RegistrationForm: React.FC = () => {
   const [user, setUser] = useState<User>({
     id: '',
     email: '',
@@ -26,6 +27,7 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
   });
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const router = useRouter();
 
   const handleInputChange = (field: keyof User, value: string | number | undefined) => {
     setUser({ ...user, [field]: value });
@@ -44,9 +46,7 @@ const RegistrationForm: React.FC<{ onSubmit: (user: User) => void }> = ({ onSubm
         console.log("User added with ID: ", firebaseUser.uid);
         const userData = { ...user, id: firebaseUser.uid };
         await setDoc(doc(firestore, "users", firebaseUser.uid), userData);
-        onSubmit(userData);
-        setAlertMessage('Registration Successful!');
-        setAlertVisible(true);
+        router.push({ pathname: './SuccessScreen', params: { name: user.name } });
       }
     } catch (error: any) {
       console.error("Error adding user: ", error);

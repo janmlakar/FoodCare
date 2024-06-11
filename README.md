@@ -1,4 +1,4 @@
-# FoodCare - Praktikum II
+# NutriGo - Praktikum II
 
 Funkcionalnosti mobilne aplikacije:
 - Registracija uporabnika z podrobnostmi kot so starost, višina, teža, aktivnost
@@ -11,4 +11,8 @@ Funkcionalnosti mobilne aplikacije:
   Tehnologije mobilne aplikacije:
   - React Native
   - Typescript
-  - Node.js & Express.js
+  - Firebase
+  - Expo Router
+  - Edamam API
+  - Stepzen GraphQL
+  - Apollo Client
