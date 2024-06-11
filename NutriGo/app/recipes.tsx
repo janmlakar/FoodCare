@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Text, View, ScrollView, SafeAreaView, StyleSheet, Animated, Image, ActivityIndicator, Dimensions } from 'react-native';
+import { Text, TouchableOpacity, View, ScrollView, SafeAreaView, StyleSheet, Animated, Image, Dimensions, ActivityIndicator, PanResponder } from 'react-native';
 import { useFonts } from 'expo-font';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import ErrorBoundary from 'react-native-error-boundary';
 import SearchForm from '../components/SearchForm';
 import RecipeList from '../components/RecipeList';
 import RecipeModal from '../components/RecipeModal';
-import SplashScreen from '../components/SplashScreen'; // Import the SplashScreen component
+import LinearGradient from 'react-native-linear-gradient';
 
 interface Recipe {
   label: string;
@@ -44,27 +43,8 @@ const App: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const animatedValue = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
-  const [isSplashVisible, setIsSplashVisible] = useState(true); // New state for splash screen visibility
-  const [appLoaded, setAppLoaded] = useState(false); // New state to indicate if app is fully loaded
 
   const screenHeight = Dimensions.get('window').height;
-
-  useEffect(() => {
-    const checkSplashScreen = async () => {
-      try {
-        const splashScreenShown = await AsyncStorage.getItem('splashScreenShown');
-        console.log('splashScreenShown:', splashScreenShown);
-        if (splashScreenShown) {
-          setIsSplashVisible(false);
-        }
-        setAppLoaded(true); // Mark app as loaded
-      } catch (error) {
-        console.error('Error checking splash screen:', error);
-      }
-    };
-
-    checkSplashScreen();
-  }, []);
 
   useEffect(() => {
     if (fontsLoaded) {
@@ -165,15 +145,6 @@ const App: React.FC = () => {
     setModalVisible(false);
   };
 
-  const handleGetStarted = async () => {
-    try {
-      await AsyncStorage.setItem('splashScreenShown', 'true');
-      setIsSplashVisible(false);
-    } catch (error) {
-      console.error('Error setting splash screen flag:', error);
-    }
-  };
-
   const animatedStyle = {
     opacity: animatedValue.interpolate({
       inputRange: [0, 1],
@@ -181,7 +152,23 @@ const App: React.FC = () => {
     }),
   };
 
-  if (!fontsLoaded || !appLoaded) {
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderRelease: (evt, gestureState) => {
+        if (gestureState.dx > 50) {
+          // Swiped right
+          fetchRecipes();
+        } else if (gestureState.dx < -50) {
+          // Swiped left
+          fetchRecipes();
+        }
+      },
+    })
+  ).current;
+
+  if (!fontsLoaded) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -191,33 +178,42 @@ const App: React.FC = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      {isSplashVisible ? (
-        <SplashScreen onGetStarted={handleGetStarted} /> // Display splash screen
-      ) : (
-        <View style={styles.container}>
-          <View style={styles.glitterWrapper} pointerEvents="none"></View>
-          <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollViewContent}>
-            <View style={styles.innerContainer}>
-              <Text style={styles.title}>Recipe Search</Text>
-              <SearchForm
-                query={query}
-                setQuery={setQuery}
-                healthLabels={healthLabels}
-                setHealthLabels={setHealthLabels}
-                dietLabels={dietLabels}
-                setDietLabels={setDietLabels}
-                calories={calories}
-                setCalories={setCalories}
-                fetchRecipes={fetchRecipes}
-              />
-              {loading && <Image style={styles.splashImage} source={require('../assets/images/fruit.gif')} />}
-              {!loading && recipes && recipes.length > 0 && <RecipeList data={recipes} openModal={openModal} />}
-              {!loading && recipes && recipes.length === 0 && <Text style={styles.errorMessage}>{errorMessage}</Text>}
-            </View>
-          </ScrollView>
+      <View style={styles.container}>
+        <View style={styles.glitterWrapper} pointerEvents="none"></View>
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={styles.scrollViewContent}
+          {...panResponder.panHandlers}
+        >
+          <View style={styles.innerContainer}>
+            <Text style={styles.title}>Recipe Search</Text>
+            <SearchForm
+              query={query}
+              setQuery={setQuery}
+              healthLabels={healthLabels}
+              setHealthLabels={setHealthLabels}
+              dietLabels={dietLabels}
+              setDietLabels={setDietLabels}
+              calories={calories}
+              setCalories={setCalories}
+              fetchRecipes={fetchRecipes}
+            />
+            {loading && <Image style={styles.splashImage} source={require('../assets/images/fruit.gif')} />}
+            {!loading && recipes && recipes.length > 0 && <RecipeList data={recipes} openModal={openModal} />}
+            {!loading && recipes && recipes.length === 0 && <Text style={styles.errorMessage}>{errorMessage}</Text>}
+            {recipes && (
+              <View style={styles.buttonRow}>
+                <Animated.View style={[styles.hideButton, animatedStyle]}>
+                  <TouchableOpacity onPress={() => setRecipes(null)}>
+                    <Text style={styles.hideButtonText}>Hide</Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
+            )}
+          </View>
           <RecipeModal visible={modalVisible} onClose={closeModal} recipe={selectedRecipe} />
-        </View>
-      )}
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -270,7 +266,9 @@ const styles = StyleSheet.create({
     shadowColor: 'rgba(149, 173, 254, 0.3)',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
+    shadowRadius: 22,
   },
+
   hideButtonText: {
     color: '#fff',
     fontWeight: 'bold',

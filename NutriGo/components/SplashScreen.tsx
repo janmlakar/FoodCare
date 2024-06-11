@@ -1,14 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import useFonts from './useFonts';
 
 const SplashScreen = () => {
+  const fontsLoaded = useFonts();
   const router = useRouter();
 
   const handleGetStarted = () => {
     router.push('/plan');
   };
+
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" />;
+  }
 
   return (
     <View style={styles.container}>
@@ -41,7 +47,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 55,
     fontWeight: 'bold',
-    fontFamily: 'Poppins-regular',
+    fontFamily: 'Poppins-Regular',
     color: 'black',
     textAlign: 'center',
   },
@@ -72,7 +78,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
-    fontFamily: 'Poppins-regular',
+    fontFamily: 'Poppins-Regular',
   },
 });
 
