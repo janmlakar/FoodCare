@@ -82,9 +82,10 @@ export default function Search() {
     return (
       <View style={{ backgroundColor: 'white' }}>
         <CameraView style={{ width: '100%', height: '100%' }} onBarcodeScanned={(data) => {
+          console.log('Scanned barcode:', data.data);
           runSearch({ variables: { upc: data.data } });
           setScannerEnabled(false);
-        }}/>
+        }} />
         <Ionicons
           onPress={() => setScannerEnabled(false)}
           name="close-circle-outline"
