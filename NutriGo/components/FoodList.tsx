@@ -1,4 +1,3 @@
-// FoodList.tsx
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { auth, firestore } from '@/firebase/firebase';
 import { collection, addDoc, query, where, getDocs, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
@@ -10,13 +9,13 @@ interface FoodItem {
     ENERC_KCAL: number;
   };
   brand?: string;
-  id?: string;  // Add an optional id field to store the Firestore document ID
+  id?: string;
 }
 
 interface FoodContextProps {
   foodItems: FoodItem[];
   addFoodItem: (item: FoodItem) => void;
-  removeFoodItem: (itemId: string) => void;  // New function for removing items
+  removeFoodItem: (itemId: string) => void;
 }
 
 const FoodList = createContext<FoodContextProps | undefined>(undefined);
