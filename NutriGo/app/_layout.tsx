@@ -46,9 +46,9 @@ const Layout = () => {
                   <Ionicons name="stats-chart" size={24} color={pathname === '/statistics' ? "pink" : "grey"} />
                   {pathname === '/statistics' && <PinkDot />}
                 </NavButton>
-                <NavButton onPress={() => router.push('/')}>
-                  <Ionicons name="search-sharp" size={24} color={pathname === '/' ? "pink" : "grey"} />
-                  {pathname === '/' && <PinkDot />}
+                <NavButton onPress={() => router.push('/recipes')}>
+                  <Ionicons name="search-sharp" size={24} color={pathname === '/recipes' ? "pink" : "grey"} />
+                  {pathname === '/recipes' && <PinkDot />}
                 </NavButton>
                 <NavButton onPress={() => router.push('/tracker')}>
                   <Ionicons name="nutrition" size={24} color={pathname === '/tracker' ? "pink" : "grey"} />

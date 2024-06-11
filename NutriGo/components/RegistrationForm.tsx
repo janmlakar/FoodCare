@@ -46,7 +46,7 @@ const RegistrationForm: React.FC = () => {
         console.log("User added with ID: ", firebaseUser.uid);
         const userData = { ...user, id: firebaseUser.uid };
         await setDoc(doc(firestore, "users", firebaseUser.uid), userData);
-        router.push({ pathname: './SuccessScreen', params: { name: user.name } });
+        router.push({ pathname: '/SuccessScreen', params: { name: user.name } });
       }
     } catch (error: any) {
       console.error("Error adding user: ", error);

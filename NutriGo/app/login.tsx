@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { auth, firestore } from '../firebase/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -14,16 +14,20 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     if (user) {
       router.push('/profile');
+    } else {
+      setLoading(false);
     }
   }, [user, router]);
 
   const handleLogin = async () => {
     try {
+      setLoading(true);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       setSuccess('Login successful!');
@@ -58,8 +62,18 @@ const LoginForm = () => {
       setError(errorMessage);
       setSuccess('');
       console.error('Error logging in:', error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

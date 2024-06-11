@@ -9,7 +9,7 @@ const SuccessScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Image
-source={require('../assets/images/artt.jpg')}
+source={require('../assets/images/artt2.jpg')}
 style={styles.image}
       />
       <Text style={styles.welcomeText}>Welcome, {name}</Text>

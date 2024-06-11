@@ -1,9 +1,15 @@
-// SplashScreen.js
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 
-const SplashScreen = ({ onGetStarted }) => {
+const SplashScreen = () => {
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    router.push('/plan');
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
@@ -11,7 +17,7 @@ const SplashScreen = ({ onGetStarted }) => {
         <Text style={styles.highlight}>X</Text>
       </Text>
       <Text style={styles.subtitle}>Be bold, be FIT</Text>
-      <TouchableOpacity onPress={onGetStarted}>
+      <TouchableOpacity onPress={handleGetStarted}>
         <LinearGradient
           colors={['#92a3fd', '#9dceff']}
           style={styles.button}
