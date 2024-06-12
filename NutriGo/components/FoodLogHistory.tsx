@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
-import CircularProgress from 'react-native-circular-progress-indicator';
 import { LineChart } from 'react-native-chart-kit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from '@/hooks/useUser';
@@ -20,30 +19,6 @@ const styles = StyleSheet.create({
         color: '#000',
         fontFamily: 'SpaceMono-Regular',
     },
-    calorieInfoContainer: {
-        padding: 20,
-        alignItems: 'center',
-    },
-    calorieTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#000',
-        fontFamily: 'SpaceMono-Regular',
-        marginBottom: 5,
-    },
-    legendText: {
-        fontSize: 14,
-        color: '#000',
-        fontFamily: 'SpaceMono-Regular',
-        textAlign: 'center',
-        marginTop: 5,
-    },
-    legendContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 10,
-    },
     chartContainer: {
         marginVertical: 20,
         borderRadius: 16,
@@ -52,11 +27,18 @@ const styles = StyleSheet.create({
         padding: 10,
         backgroundColor: '#fff',
     },
+    legendText: {
+        fontSize: 14,
+        color: '#000',
+        fontFamily: 'SpaceMono-Regular',
+        textAlign: 'center',
+        marginTop: 5,
+    },
 });
 
 interface CalorieEntry {
     date: string;
-    calories: number;
+    totalCalories: number;
 }
 
 const FoodLogHistory = () => {
@@ -64,8 +46,6 @@ const FoodLogHistory = () => {
     const [dailyCalorieIntake, setDailyCalorieIntake] = useState(0);
     const [dailyCalories, setDailyCalories] = useState<CalorieEntry[]>([]);
     const [totalCaloriesConsumed, setTotalCaloriesConsumed] = useState<number>(0);
-    const [caloriesPercentage, setCaloriesPercentage] = useState<number>(0);
-    const [lastUpdateDate, setLastUpdateDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
     useEffect(() => {
         if (user) {
@@ -89,7 +69,8 @@ const FoodLogHistory = () => {
                     const parsedCalories = JSON.parse(storedCalories);
                     console.log('Fetched daily calories:', parsedCalories);
                     setDailyCalories(parsedCalories);
-                    const todayCalories = parsedCalories.find((entry: { date: string }) => entry.date === new Date().toISOString().split('T')[0])?.calories || 0;
+
+                    const todayCalories = parsedCalories.find((entry: { date: string }) => entry.date === new Date().toISOString().split('T')[0])?.totalCalories || 0;
                     setTotalCaloriesConsumed(todayCalories);
                 }
             } catch (error) {
@@ -102,49 +83,6 @@ const FoodLogHistory = () => {
         }
     }, [user]);
 
-    useEffect(() => {
-        const now = new Date();
-        const today = now.toISOString().split('T')[0];
-
-        if (today !== lastUpdateDate) {
-            resetCalories();
-            setLastUpdateDate(today);
-        }
-
-        const millisTillMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0).getTime() - now.getTime();
-        const timeoutId = setTimeout(() => {
-            resetCalories();
-            setLastUpdateDate(new Date().toISOString().split('T')[0]);
-        }, millisTillMidnight);
-
-        return () => clearTimeout(timeoutId);
-    }, [lastUpdateDate]);
-
-    useEffect(() => {
-        if (totalCaloriesConsumed > 0 && dailyCalorieIntake > 0) {
-            setCaloriesPercentage((totalCaloriesConsumed / dailyCalorieIntake) * 100);
-        } else {
-            setCaloriesPercentage(0);
-        }
-    }, [totalCaloriesConsumed, dailyCalorieIntake]);
-
-    const resetCalories = async () => {
-        if (!user) return;
-        const newDate = new Date().toISOString().split('T')[0];
-        await AsyncStorage.setItem(`dailyCalories_${user.uid}`, JSON.stringify([{ date: newDate, calories: 0 }]));
-        setDailyCalories([{ date: newDate, calories: 0 }]);
-        setTotalCaloriesConsumed(0);
-        setCaloriesPercentage(0);
-    };
-
-    if (!user) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 18, color: '#000', textAlign: 'center' }}>Login to see Food Log</Text>
-            </View>
-        );
-    }
-
     return (
         <SafeAreaView style={styles.container}>
             <Text style={styles.title}>Daily Food Log History</Text>
@@ -156,7 +94,7 @@ const FoodLogHistory = () => {
                             labels: dailyCalories.map(entry => entry.date), // Dates on X-axis
                             datasets: [
                                 {
-                                    data: dailyCalories.map(entry => entry.calories),
+                                    data: dailyCalories.map(entry => entry.totalCalories),
                                     color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // Custom color
                                     strokeWidth: 2, // Optional: define stroke width
                                 },

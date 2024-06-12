@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, Button, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, ActivityIndicator, TouchableOpacity, Button } from 'react-native';
 import { gql, useLazyQuery } from '@apollo/client';
 import FoodItem from '@/components/FoodItem';
 import { useFood } from '@/components/FoodList';
@@ -61,7 +61,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
-  
   flatListContent: {
     gap: 5,
   },
@@ -179,14 +178,15 @@ export default function Search() {
                     label: item.food.label,
                     nutrients: item.food.nutrients,
                     brand: item.food.brand,
-                    userId: ''
+                    userId: user?.id || '', // Ensure userId is set
+                    name: item.food.label || 'Unknown Food' // Ensure name is set
                   });
                 }}
               />
             </LinearGradient>
           </View>
         )}
-       
+        keyExtractor={(item) => item.food.foodId}
         contentContainerStyle={styles.flatListContent}
       />
     </View>

@@ -12,7 +12,7 @@ interface HistoryEntry {
   amount?: number;
   note?: string;
   weight?: number;
-  calories?: number;
+  totalCalories?: number;
 }
 
 const Statistics: React.FC = () => {
@@ -53,7 +53,7 @@ const Statistics: React.FC = () => {
         if (storedCalories) {
           const parsedCalories = JSON.parse(storedCalories);
           setDailyCalories(parsedCalories);
-          const todayCalories = parsedCalories.find((entry: { date: string }) => entry.date === new Date().toISOString().split('T')[0])?.calories || 0;
+          const todayCalories = parsedCalories.find((entry: { date: string }) => entry.date === new Date().toISOString().split('T')[0])?.totalCalories || 0;
           setTotalCaloriesConsumed(todayCalories);
         }
       }
@@ -71,30 +71,26 @@ const Statistics: React.FC = () => {
       setLastUpdateDate(today);
     }
 
-    // Set interval for every minute for testing purposes
-    const intervalId = setInterval(() => {
+    const millisTillMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0).getTime() - now.getTime();
+    const timeoutId = setTimeout(() => {
       resetCalories();
       setLastUpdateDate(new Date().toISOString().split('T')[0]);
-    }, 60000); // 60000ms = 1 minute
+    }, millisTillMidnight);
 
-    return () => clearInterval(intervalId);
+    return () => clearTimeout(timeoutId);
   }, [lastUpdateDate]);
 
   const resetCalories = async () => {
     if (!user) return;
     const newDate = new Date().toISOString().split('T')[0];
-    await AsyncStorage.setItem(`dailyCalories_${user.uid}`, JSON.stringify([{ date: newDate, calories: 0 }]));
-    setDailyCalories([{ date: newDate, calories: 0 }]);
+    await AsyncStorage.setItem(`dailyCalories_${user.uid}`, JSON.stringify([{ date: newDate, totalCalories: 0 }]));
+    setDailyCalories([{ date: newDate, totalCalories: 0 }]);
     setTotalCaloriesConsumed(0);
   };
 
   // Prepare data for the water intake chart
   const waterDates = waterIntakeHistory.filter(entry => entry.amount !== undefined).map(entry => entry.date);
   const waterAmounts = waterIntakeHistory.filter(entry => entry.amount !== undefined).map(entry => entry.amount!);
-
-  // Prepare data for the calorie intake chart
-  const calorieDates = dailyCalories.map(entry => entry.date);
-  const calorieAmounts = dailyCalories.map(entry => entry.calories || 0);
 
   if (loading) {
     return <View style={styles.loadingContainer}><Text>Loading...</Text></View>;
@@ -160,60 +156,6 @@ const Statistics: React.FC = () => {
           />
         ) : (
           <Text style={styles.noDataText}>No water intake data available.</Text>
-        )}
-      </View>
-      <View style={styles.container}>
-        <Text style={styles.title}>Daily Calorie Intake History</Text>
-        {calorieAmounts.length > 0 ? (
-          <View style={styles.chartContainer}>
-            <LineChart
-              data={{
-                labels: calorieDates,
-                datasets: [
-                  {
-                    data: calorieAmounts,
-                    color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
-                    strokeWidth: 2,
-                  },
-                ],
-              }}
-              width={Dimensions.get('window').width - 40}
-              height={280}
-              yAxisLabel=""
-              yAxisSuffix="kcal"
-              chartConfig={{
-                backgroundColor: '#f5f5f5',
-                backgroundGradientFrom: '#f5f5f5',
-                backgroundGradientTo: '#ffffff',
-                decimalPlaces: 0,
-                color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                style: {
-                  borderRadius: 16,
-                  borderWidth: 1,
-                  borderColor: '#ddd',
-                },
-                propsForDots: {
-                  r: '6',
-                  strokeWidth: '2',
-                  stroke: '#ff6347',
-                },
-                propsForBackgroundLines: {
-                  strokeDasharray: '',
-                },
-              }}
-              bezier
-              style={{
-                marginVertical: 8,
-                borderRadius: 16,
-                borderWidth: 1,
-                borderColor: '#ddd',
-                marginHorizontal: 10,
-              }}
-            />
-          </View>
-        ) : (
-          <Text style={styles.noDataText}>No calorie intake data available.</Text>
         )}
       </View>
       <View style={{ flex: 1 }}>
