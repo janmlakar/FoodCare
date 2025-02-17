@@ -15,7 +15,8 @@
   "main": "lib/index.js",
   "dependencies": {
     "firebase-admin": "^12.1.1",
-    "firebase-functions": "^5.0.1"
+    "firebase-functions": "^5.0.1",
+    "functions": "file:"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.13.0",

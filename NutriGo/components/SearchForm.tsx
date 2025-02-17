@@ -16,46 +16,19 @@ interface SearchFormProps {
 }
 
 const dietOptions = [
-  'balanced',
-  'high-fiber',
-  'high-protein',
-  'low-carb',
-  'low-fat',
-  'low-sodium',
+  'balanced', 'high-fiber', 'high-protein', 'low-carb', 'low-fat', 'low-sodium',
 ];
 
 const healthOptions = [
-  'low-potassium',
-  'no-oil-added',
-  'paleo',
-  'pescatarian',
-  'pork-free',
-  'red-meat-free',
-  'sugar-conscious',
-  'vegetarian',
-  'gluten-free',
-  'dairy-free',
-  'peanut-free',
-  'tree-nut-free',
-  'low-sugar',
-  'keto-friendly',
-  'kidney-friendly',
-  'kosher',
-  'vegan',
+  'low-potassium', 'no-oil-added', 'paleo', 'pescatarian', 'pork-free', 'red-meat-free',
+  'sugar-conscious', 'vegetarian', 'gluten-free', 'dairy-free', 'peanut-free', 'tree-nut-free',
+  'low-sugar', 'keto-friendly', 'kidney-friendly', 'kosher', 'vegan',
 ];
 
 const SearchForm: React.FC<SearchFormProps> = ({
-  query,
-  setQuery,
-  healthLabels = [],
-  setHealthLabels,
-  dietLabels = [],
-  setDietLabels,
-  calories,
-  setCalories,
-  fetchRecipes,
+  query, setQuery, healthLabels, setHealthLabels, dietLabels, setDietLabels, calories, setCalories, fetchRecipes
 }) => {
-  const shimmerAnimation = useState(new Animated.Value(0))[0];
+  const shimmerAnimation = useState<Animated.Value>(new Animated.Value(0))[0];
 
   useEffect(() => {
     Animated.loop(
@@ -72,6 +45,10 @@ const SearchForm: React.FC<SearchFormProps> = ({
         }),
       ])
     ).start();
+
+    return () => {
+      shimmerAnimation.stopAnimation();  // Cleanup on unmount
+    };
   }, [shimmerAnimation]);
 
   const shimmerTranslate = shimmerAnimation.interpolate({
@@ -123,10 +100,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
               onChangeText={setQuery}
             />
             <Animated.View
-              style={[
-                localStyles.shimmerOverlay,
-                { transform: [{ translateX: shimmerTranslate }] },
-              ]}
+              style={[localStyles.shimmerOverlay, { transform: [{ translateX: shimmerTranslate }] }]}
             >
               <LinearGradient
                 colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
@@ -142,7 +116,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
       <View style={localStyles.labelContainer}>
         <Text style={localStyles.label}>Health Labels:</Text>
         <View style={localStyles.labels}>
-          {healthOptions.map((label) => (
+          {healthOptions.map(label => (
             <MemoizedLabel key={label} item={label} setLabels={setHealthLabels} labels={healthLabels} />
           ))}
         </View>
@@ -151,7 +125,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
       <View style={localStyles.labelContainer}>
         <Text style={localStyles.label}>Diet Labels:</Text>
         <View style={localStyles.labels}>
-          {dietOptions.map((label) => (
+          {dietOptions.map(label => (
             <MemoizedLabel key={label} item={label} setLabels={setDietLabels} labels={dietLabels} />
           ))}
         </View>
@@ -174,10 +148,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
               keyboardType="numeric"
             />
             <Animated.View
-              style={[
-                localStyles.shimmerOverlay,
-                { transform: [{ translateX: shimmerTranslate }] },
-              ]}
+              style={[localStyles.shimmerOverlay, { transform: [{ translateX: shimmerTranslate }] }]}
             >
               <LinearGradient
                 colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
@@ -203,10 +174,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
             style={StyleSheet.absoluteFill}
           />
           <Animated.View
-            style={[
-              localStyles.shimmerOverlay,
-              { transform: [{ translateX: shimmerTranslate }] },
-            ]}
+            style={[localStyles.shimmerOverlay, { transform: [{ translateX: shimmerTranslate }] }]}
           >
             <LinearGradient
               colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
@@ -221,8 +189,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
     </View>
   );
 };
-
-
 const localStyles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
@@ -235,6 +201,7 @@ const localStyles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 25,
     elevation: 10,
+    zIndex: 1,
   },
   smallInputContainer: {
     flexDirection: 'row',
@@ -247,7 +214,8 @@ const localStyles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 25,
     elevation: 10,
-    width: '50%', // Make the container half the width
+    width: '50%',
+    zIndex: 1,
   },
   gradientBorder: {
     flex: 1,
@@ -257,7 +225,7 @@ const localStyles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff', // Changed to white
+    backgroundColor: '#fff',
     borderRadius: 25,
     flex: 1,
     overflow: 'hidden',
@@ -265,21 +233,24 @@ const localStyles = StyleSheet.create({
   smallInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff', // Changed to white
+    backgroundColor: '#fff',
     borderRadius: 25,
     flex: 1,
     overflow: 'hidden',
-    width: '100%', // Ensure it takes full width of the container
+    width: '100%',
+    paddingHorizontal: 10,
   },
   input: {
     flex: 1,
-    backgroundColor: '#fff', // Changed to white
+    backgroundColor: '#fff',
     borderColor: '#ccc',
     borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 25,
-    color: '#000', // Text color changed to black
+    color: '#000',
+    padding: 0, // Dodano, da odpravimo morebitne težave s prevelikim robom
+    height: 50, // Dodano za povečanje višine vnosnega polja
   },
   shimmerOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -287,12 +258,13 @@ const localStyles = StyleSheet.create({
   },
   labelContainer: {
     marginBottom: 10,
+    zIndex: 0,
   },
   label: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
-    color: 'black', // Changed to black
+    color: 'black',
   },
   labels: {
     flexDirection: 'row',
@@ -302,7 +274,8 @@ const localStyles = StyleSheet.create({
     marginHorizontal: 5,
     marginVertical: 5,
     borderRadius: 20,
-    overflow: 'hidden', // Ensure the gradient stays within the borders
+    overflow: 'hidden',
+    zIndex: 1,
   },
   gradientBackground: {
     paddingVertical: 5,
@@ -312,20 +285,21 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
   },
   labelButtonText: {
-    color: 'black', // Changed to black
+    color: 'black',
     textAlign: 'center',
   },
   labelButtonTextSelected: {
-    color: 'white', // Text color for selected state
+    color: 'white',
     textAlign: 'center',
   },
   searchButtonContainer: {
     marginVertical: 15,
     borderRadius: 25,
     overflow: 'hidden',
+    zIndex: 1,
   },
   searchButton: {
-    backgroundColor: 'linear-gradient(274deg, #92a3fd 0%, #9dceff 124.45%)', // Gradient background
+    backgroundColor: 'linear-gradient(274deg, #92a3fd 0%, #9dceff 124.45%)',
     paddingVertical: 18,
     paddingHorizontal: 60,
     borderRadius: 99,
@@ -341,8 +315,9 @@ const localStyles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     position: 'relative',
-    zIndex: 1,
+    zIndex: 2,
   },
 });
+
 
 export default SearchForm;

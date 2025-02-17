@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 
@@ -7,38 +7,44 @@ const SuccessScreen: React.FC = () => {
   const { name } = useLocalSearchParams();
 
   return (
-    <View style={styles.container}>
-      <Image
-source={require('../assets/images/artt2.jpg')}
-style={styles.image}
-      />
-      <Text style={styles.welcomeText}>Welcome, {name}</Text>
-      <Text style={styles.descriptionText}>You are all set now, let's reach your goals together</Text>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        <Image
+          source={require('../assets/images/artt2.jpg')}
+          style={styles.image}
+        />
+        <Text style={styles.welcomeText}>Welcome, {name}</Text>
+        <Text style={styles.descriptionText}>You are all set now, let's reach your goals together</Text>
 
-      <TouchableOpacity onPress={() => router.push('/plan')}>
-        <LinearGradient
-          colors={['#92a3fd', '#9dceff']}
-          style={styles.button}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Text style={styles.buttonText}>Discover your plans</Text>
-        </LinearGradient>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity onPress={() => router.push('/plan')}>
+          <LinearGradient
+            colors={['#92a3fd', '#9dceff']}
+            style={styles.button}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.buttonText}>Discover your plans</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
+    paddingVertical: 20, // Dodajte nekaj paddinga za boljši izgled
   },
   image: {
-    width: 400,
-    height: 400,
+    width: 300,
+    height: 300,
     marginBottom: 20,
   },
   welcomeText: {

@@ -13,6 +13,7 @@ const { width } = Dimensions.get('window');
 
 const RegistrationForm: React.FC = () => {
   const [user, setUser] = useState<User>({
+    uid: '',
     id: '',
     email: '',
     password: '',

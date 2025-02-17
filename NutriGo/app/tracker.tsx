@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, SafeAreaView, TextInput, TouchableOpacity, Alert, FlatList, ListRenderItem, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Link } from "expo-router"; // Make sure you have expo-router installed and configured
+import { Link } from "expo-router";
 import { useUser } from '@/hooks/useUser';
 import { useFood } from '@/components/FoodList';
 import FoodItem from '../components/FoodItem';
@@ -28,7 +28,7 @@ export default function Tracker() {
     const { user, loading } = useUser();
     const { foodItems, addFoodItem, removeFoodItem, setFoodItems } = useFood();
     const [inputCalories, setInputCalories] = useState('');
-    const [manualCalories, setManualCalories] = useState(0);
+    const [manualItems, setManualItems] = useState<FoodItem[]>([]);
     const [totalCalories, setTotalCalories] = useState(0);
     const [isAdding, setIsAdding] = useState(false);
 
@@ -40,7 +40,7 @@ export default function Tracker() {
 
                 if (storedDate !== currentDate) {
                     await AsyncStorage.setItem(`lastCheckedDate_${user.id}`, currentDate);
-                    setManualCalories(0);
+                    setManualItems([]);
                     setFoodItems([]);
                     setTotalCalories(0);
                 } else {
@@ -49,7 +49,8 @@ export default function Tracker() {
                         const dailyCalories = JSON.parse(storedCalories);
                         const todayCalories = dailyCalories.find((entry: { date: string }) => entry.date === currentDate);
                         if (todayCalories) {
-                            setManualCalories(todayCalories.manualCalories || 0);
+                            setManualItems(todayCalories.manualItems || []);
+                            setFoodItems(todayCalories.foodItems || []);
                             setTotalCalories(todayCalories.totalCalories || 0);
                         }
                     }
@@ -63,27 +64,32 @@ export default function Tracker() {
         if (!loading && user) {
             const calculateTotalCalories = () => {
                 const foodCalories = foodItems.reduce((total, item) => total + item.nutrients.ENERC_KCAL, 0);
+                const manualCalories = manualItems.reduce((total, item) => total + item.nutrients.ENERC_KCAL, 0);
                 setTotalCalories(manualCalories + foodCalories);
             };
             calculateTotalCalories();
         }
-    }, [foodItems, manualCalories, loading, user]);
+    }, [foodItems, manualItems, loading, user]);
 
     const handleAddCalories = async () => {
         if (!user || isAdding) return;
 
         setIsAdding(true);
 
-        console.log("Adding calories for user:", user);
-
         const calories = parseInt(inputCalories, 10);
         if (calories > 0 && calories <= 5000) {
-            setManualCalories(prevManualCalories => {
-                const newManualCalories = prevManualCalories + calories;
-                const foodCalories = foodItems.reduce((total, item) => total + item.nutrients.ENERC_KCAL, 0);
-                saveDailyCalories(newManualCalories, foodCalories);
-                setTotalCalories(newManualCalories + foodCalories);
-                return newManualCalories;
+            const newManualItem: FoodItem = {
+                name: "Manual Entry",
+                foodId: `manual_${Date.now()}`,
+                label: "Manually Added",
+                nutrients: { ENERC_KCAL: calories },
+                userId: user.id,
+            };
+
+            setManualItems(prevManualItems => {
+                const newManualItems = [...prevManualItems, newManualItem];
+                saveDailyCalories(newManualItems, foodItems);
+                return newManualItems;
             });
             setInputCalories('');
         } else {
@@ -92,7 +98,7 @@ export default function Tracker() {
         setIsAdding(false);
     };
 
-    const saveDailyCalories = async (manualCalories: number, foodCalories: number) => {
+    const saveDailyCalories = async (manualItems: FoodItem[], foodItems: FoodItem[]) => {
         if (!user) {
             console.error('User not found or UID is undefined.');
             return;
@@ -102,13 +108,15 @@ export default function Tracker() {
         const storedCalories = await AsyncStorage.getItem(`dailyCalories_${user.id}`);
         const dailyCalories = storedCalories ? JSON.parse(storedCalories) : [];
         const existingEntryIndex = dailyCalories.findIndex((entry: { date: string }) => entry.date === today);
+        const manualCalories = manualItems.reduce((total, item) => total + item.nutrients.ENERC_KCAL, 0);
+        const foodCalories = foodItems.reduce((total, item) => total + item.nutrients.ENERC_KCAL, 0);
         const totalCalories = manualCalories + foodCalories;
         if (existingEntryIndex !== -1) {
-            dailyCalories[existingEntryIndex].manualCalories = manualCalories;
-            dailyCalories[existingEntryIndex].foodCalories = foodCalories;
+            dailyCalories[existingEntryIndex].manualItems = manualItems;
+            dailyCalories[existingEntryIndex].foodItems = foodItems;
             dailyCalories[existingEntryIndex].totalCalories = totalCalories;
         } else {
-            dailyCalories.push({ date: today, manualCalories, foodCalories, totalCalories });
+            dailyCalories.push({ date: today, manualItems, foodItems, totalCalories });
         }
         await AsyncStorage.setItem(`dailyCalories_${user.id}`, JSON.stringify(dailyCalories));
     };
@@ -116,16 +124,23 @@ export default function Tracker() {
     const handleRemoveFood = async (id: string | undefined) => {
         if (!user || !id) return;
 
-        const foodItem = foodItems.find(item => item.id === id);
+        const foodItem = foodItems.find(item => item.id === id || item.foodId === id);
         if (foodItem) {
             try {
                 await removeFoodItem(id);
-                const foodCalories = foodItems.reduce((total, item) => total + item.nutrients.ENERC_KCAL, 0) - Math.round(foodItem.nutrients.ENERC_KCAL);
-                setTotalCalories(manualCalories + foodCalories);
-                saveDailyCalories(manualCalories, foodCalories);
-                console.log("Food item removed:", foodItem);
+                const updatedFoodItems = foodItems.filter(item => item.id !== id && item.foodId !== id);
+                setFoodItems(updatedFoodItems);
+                saveDailyCalories(manualItems, updatedFoodItems);
             } catch (error) {
                 console.error('Error removing food item:', error);
+            }
+        } else {
+            const manualItemIndex = manualItems.findIndex(item => item.foodId === id);
+            if (manualItemIndex !== -1) {
+                const newManualItems = [...manualItems];
+                newManualItems.splice(manualItemIndex, 1);
+                setManualItems(newManualItems);
+                saveDailyCalories(newManualItems, foodItems);
             }
         }
     };
@@ -135,10 +150,10 @@ export default function Tracker() {
             <FoodItem
                 item={item}
                 isAdded={true}
-                onRemoveFood={() => handleRemoveFood(item.id)}
+                onRemoveFood={() => handleRemoveFood(item.foodId)}
             />
         </View>
-    ), [foodItems]);
+    ), [foodItems, manualItems]);
 
     if (loading) {
         return <Text>Loading...</Text>;
@@ -166,7 +181,7 @@ export default function Tracker() {
             </View>
             <SimpleStill totalCalories={totalCalories} />
             <FlatList
-                data={foodItems}
+                data={[...manualItems, ...foodItems]}
                 renderItem={renderFoodItem}
                 keyExtractor={(item) => item.id ?? item.foodId}
                 ListEmptyComponent={() => (
